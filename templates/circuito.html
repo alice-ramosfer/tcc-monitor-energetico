@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}{{ nome }} — Monitor Energético{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <a href="/" class="btn btn-outline-secondary btn-sm me-2">
+      <i class="bi bi-arrow-left me-1"></i>Voltar
+    </a>
+    <span class="fw-bold fs-5">{{ nome }}</span>
+    <small class="text-muted ms-2">últimas 24 horas</small>
+  </div>
+  <span class="live-dot"></span>
+</div>
+
+{% if leituras %}
+<!-- Última leitura em destaque -->
+{% set ul = leituras[-1] %}
+<div class="row g-3 mb-4">
+  {% for label, val, un, cor in [
+    ('Tensão',         ul.tensao,         'V',   'success'),
+    ('Corrente',       ul.corrente,       'A',   'info'),
+    ('Potência Ativa', ul.potencia,       'W',   'warning'),
+    ('Fator Potência', ul.fator_potencia, '',    'purple'),
+    ('Frequência',     ul.frequencia,     'Hz',  'secondary'),
+    ('Energia Acum.',  ul.energia_kwh,    'kWh', 'danger'),
+  ] %}
+  <div class="col-6 col-md-2">
+    <div class="metrica-box text-center">
+      <div class="metrica-val text-{{ cor }}">
+        {% if val %}{{ '%.2f'|format(val) }}{% else %}—{% endif %}
+      </div>
+      <div class="metrica-un">{{ un }}</div>
+      <div class="metrica-label">{{ label }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Gráfico de Potência -->
+<div class="card mb-3">
+  <div class="card-header">
+    <i class="bi bi-graph-up me-2 text-warning"></i>Potência Ativa (W) — últimas 24h
+  </div>
+  <div class="card-body">
+    <canvas id="graficoPotencia" height="100"></canvas>
+  </div>
+</div>
+
+<!-- Gráfico de Tensão e Corrente -->
+<div class="row g-3 mb-3">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-activity me-2 text-success"></i>Tensão (V)
+      </div>
+      <div class="card-body">
+        <canvas id="graficoTensao" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <i class="bi bi-activity me-2 text-info"></i>Corrente (A)
+      </div>
+      <div class="card-body">
+        <canvas id="graficoCorrente" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<div class="card">
+  <div class="card-body text-center py-5">
+    <i class="bi bi-wifi-off text-muted" style="font-size:3rem"></i>
+    <p class="text-muted mt-3">Sem dados para este circuito ainda.<br>
+    <small>Aguardando o ESP32 enviar leituras...</small></p>
+  </div>
+</div>
+{% endif %}
+
+<!-- Anomalias deste circuito -->
+{% if anomalias %}
+<div class="card">
+  <div class="card-header">
+    <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+    Anomalias Detectadas — {{ nome }}
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-dark table-hover mb-0 small">
+        <thead><tr><th>Algoritmo</th><th>Score</th><th>Descrição</th><th>Quando</th></tr></thead>
+        <tbody>
+          {% for a in anomalias %}
+          <tr>
+            <td><code class="text-warning">{{ a.algoritmo }}</code></td>
+            <td><span class="text-danger">{{ '%.4f'|format(a.score) }}</span></td>
+            <td class="text-muted">{{ a.descricao or '—' }}</td>
+            <td><small>{{ a.timestamp.strftime('%d/%m %H:%M') }}</small></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Prepara dados para os gráficos
+const leituras = {{ leituras | map(attribute='to_dict()') | list | tojson if leituras else '[]' }};
+
+// Como Jinja não chama métodos, passamos os dados via endpoint
+fetch('/api/historico/{{ circuito }}?horas=24')
+  .then(r => r.json())
+  .then(dados => {
+    if (!dados.length) return;
+
+    const labels    = dados.map(d => d.timestamp.slice(11, 16)); // HH:MM
+    const potencias = dados.map(d => d.potencia);
+    const tensoes   = dados.map(d => d.tensao);
+    const correntes = dados.map(d => d.corrente);
+
+    const cfg = (label, data, cor) => ({
+      type: 'line',
+      data: { labels, datasets: [{ label, data, borderColor: cor,
+        backgroundColor: cor + '15', fill: true, tension: 0.3,
+        pointRadius: dados.length > 100 ? 0 : 2, borderWidth: 1.5 }] },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#606080', maxTicksLimit: 12 }, grid: { color: '#1e1e30' } },
+          y: { ticks: { color: '#606080' }, grid: { color: '#1e1e30' } }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('graficoPotencia'), cfg('Potência (W)', potencias, '#facc15'));
+    new Chart(document.getElementById('graficoTensao'),   cfg('Tensão (V)',   tensoes,   '#22c55e'));
+    new Chart(document.getElementById('graficoCorrente'), cfg('Corrente (A)', correntes, '#60a5fa'));
+  });
+</script>
+{% endblock %}

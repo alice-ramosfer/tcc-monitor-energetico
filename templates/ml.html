@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}ML / Anomalias — Monitor Energético{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h5 class="fw-bold mb-0">
+    <i class="bi bi-cpu me-2 text-purple"></i>Machine Learning — Resultados
+  </h5>
+  <button class="btn btn-purple btn-sm" onclick="rodarML()">
+    <i class="bi bi-play-fill me-1"></i>Executar ML agora
+  </button>
+</div>
+
+<!-- Cards explicativos dos algoritmos -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-header" style="border-left:3px solid #ef4444">
+        <i class="bi bi-shield-exclamation me-2 text-danger"></i>
+        <strong>Isolation Forest</strong>
+      </div>
+      <div class="card-body small text-muted">
+        <p>Detecta leituras com comportamento anômalo — consumo muito alto ou baixo para o horário.</p>
+        <p class="mb-0"><strong class="text-light">Como funciona:</strong> isola amostras raras em árvores de decisão aleatórias. Score mais negativo = mais anômalo.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-header" style="border-left:3px solid #60a5fa">
+        <i class="bi bi-diagram-3 me-2 text-info"></i>
+        <strong>K-Means (K=3)</strong>
+      </div>
+      <div class="card-body small text-muted">
+        <p>Agrupa os períodos de consumo em 3 perfis: aula matutina, aula vespertina e fora do expediente.</p>
+        <p class="mb-0"><strong class="text-light">Como funciona:</strong> minimiza a distância entre amostras e seus centroides no espaço de features.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-header" style="border-left:3px solid #22c55e">
+        <i class="bi bi-graph-up-arrow me-2 text-success"></i>
+        <strong>Regressão Linear</strong>
+      </div>
+      <div class="card-body small text-muted">
+        <p>Prevê o consumo dos próximos 7 dias com base na tendência histórica. Estima o custo em R$.</p>
+        <p class="mb-0"><strong class="text-light">Como funciona:</strong> ajusta uma reta ao consumo diário médio e extrapola para datas futuras.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Resultados ML por circuito -->
+<div class="row g-3 mb-4" id="resultados-ml">
+  {% for circuito in ['sala_aula', 'robotica', 'recepcao'] %}
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header fw-600">
+        {{ {'sala_aula': 'Sala de Aula', 'robotica': 'Sala de Robótica', 'recepcao': 'Recepção'}[circuito] }}
+      </div>
+      <div class="card-body small" id="ml-{{ circuito }}">
+        <p class="text-muted">Carregando resultados ML...</p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Tabela completa de anomalias -->
+<div class="card">
+  <div class="card-header">
+    <i class="bi bi-table me-2"></i>Todas as Anomalias Detectadas (Isolation Forest)
+  </div>
+  <div class="card-body p-0">
+    {% if anomalias %}
+    <div class="table-responsive">
+      <table class="table table-dark table-hover mb-0 small">
+        <thead><tr>
+          <th>#</th><th>Circuito</th><th>Score</th>
+          <th>Descrição</th><th>Quando</th>
+        </tr></thead>
+        <tbody>
+          {% for a in anomalias %}
+          <tr>
+            <td class="text-muted">{{ a.id }}</td>
+            <td><span class="badge bg-secondary">{{ a.circuito }}</span></td>
+            <td>
+              <span class="{% if a.score < -0.2 %}text-danger{% else %}text-warning{% endif %}">
+                {{ '%.4f'|format(a.score) }}
+              </span>
+            </td>
+            <td class="text-muted" style="max-width:320px">{{ a.descricao or '—' }}</td>
+            <td><small class="text-muted">{{ a.timestamp.strftime('%d/%m/%Y %H:%M') }}</small></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+      <i class="bi bi-cpu text-muted" style="font-size:2.5rem"></i>
+      <p class="text-muted mt-3 mb-0">Nenhuma anomalia detectada.<br>
+      <small>Use o botão "Simular dados" no Dashboard e depois execute o ML.</small></p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Carrega resultados ML de cada circuito
+['sala_aula', 'robotica', 'recepcao'].forEach(c => {
+  fetch(`/ml/resumo/${c}`)
+    .then(r => r.json())
+    .then(d => {
+      const el = document.getElementById(`ml-${c}`);
+      let html = '';
+
+      if (d.regressao) {
+        const r = d.regressao;
+        html += `<div class="mb-2">
+          <span class="text-success fw-600">📈 Regressão (R²=${r.r2})</span><br>
+          <span class="text-muted">Tendência: ${r.tendencia}</span><br>
+          <span class="text-muted">Consumo atual: ${r.pot_atual_w}W</span><br>
+          <span class="text-warning">Custo próx. 7 dias: R$ ${r.custo_7d_reais}</span>
+        </div>`;
+      }
+
+      if (d.kmeans && d.kmeans.clusters) {
+        html += `<div class="mb-2"><span class="text-info fw-600">🔵 K-Means (k=3)</span><br>`;
+        d.kmeans.clusters.forEach(cl => {
+          html += `<small class="text-muted">• ${cl.perfil}</small><br>`;
+        });
+        html += '</div>';
+      }
+
+      if (!d.regressao && !d.kmeans) {
+        html = '<p class="text-muted">Sem resultados. Execute o ML primeiro.</p>';
+      }
+
+      el.innerHTML = html;
+    })
+    .catch(() => {
+      document.getElementById(`ml-${c}`).innerHTML =
+        '<p class="text-muted small">Erro ao carregar resultados.</p>';
+    });
+});
+
+function rodarML() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass me-1"></i>Executando...';
+  fetch('/ml/rodar', { method: 'POST' })
+    .then(r => r.json())
+    .then(d => {
+      alert(d.mensagem);
+      location.reload();
+    })
+    .catch(() => alert('Erro ao executar ML.'))
+    .finally(() => { btn.disabled = false; });
+}
+</script>
+{% endblock %}
