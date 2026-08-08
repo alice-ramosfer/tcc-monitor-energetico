@@ -28,7 +28,7 @@
   <div class="col-6 col-md-2">
     <div class="metrica-box text-center">
       <div class="metrica-val text-{{ cor }}">
-        {% if val %}{{ '%.2f'|format(val) }}{% else %}—{% endif %}
+        {% if val is not none %}{{ '%.2f'|format(val) }}{% else %}—{% endif %}
       </div>
       <div class="metrica-un">{{ un }}</div>
       <div class="metrica-label">{{ label }}</div>
@@ -47,7 +47,7 @@
   </div>
 </div>
 
-<!-- Gráfico de Tensão e Corrente -->
+<!-- Gráficos Tensão e Corrente -->
 <div class="row g-3 mb-3">
   <div class="col-md-6">
     <div class="card">
@@ -81,7 +81,7 @@
 </div>
 {% endif %}
 
-<!-- Anomalias deste circuito -->
+<!-- Anomalias -->
 {% if anomalias %}
 <div class="card">
   <div class="card-header">
@@ -111,38 +111,45 @@
 
 {% block scripts %}
 <script>
-// Prepara dados para os gráficos
-const leituras = {{ leituras | map(attribute='to_dict()') | list | tojson if leituras else '[]' }};
-
-// Como Jinja não chama métodos, passamos os dados via endpoint
+// Carrega dados via API (evita problema do to_dict no Jinja)
 fetch('/api/historico/{{ circuito }}?horas=24')
   .then(r => r.json())
   .then(dados => {
     if (!dados.length) return;
 
-    const labels    = dados.map(d => d.timestamp.slice(11, 16)); // HH:MM
-    const potencias = dados.map(d => d.potencia);
-    const tensoes   = dados.map(d => d.tensao);
-    const correntes = dados.map(d => d.corrente);
+    const labels    = dados.map(d => d.timestamp.slice(11, 16));
+    const potencias = dados.map(d => d.potencia   || 0);
+    const tensoes   = dados.map(d => d.tensao      || 0);
+    const correntes = dados.map(d => d.corrente    || 0);
 
-    const cfg = (label, data, cor) => ({
+    const opts = (label, data, cor) => ({
       type: 'line',
-      data: { labels, datasets: [{ label, data, borderColor: cor,
-        backgroundColor: cor + '15', fill: true, tension: 0.3,
-        pointRadius: dados.length > 100 ? 0 : 2, borderWidth: 1.5 }] },
+      data: {
+        labels,
+        datasets: [{
+          label, data,
+          borderColor: cor,
+          backgroundColor: cor + '18',
+          fill: true,
+          tension: 0.3,
+          pointRadius: dados.length > 100 ? 0 : 2,
+          borderWidth: 1.5
+        }]
+      },
       options: {
         responsive: true,
         plugins: { legend: { display: false } },
         scales: {
-          x: { ticks: { color: '#606080', maxTicksLimit: 12 }, grid: { color: '#1e1e30' } },
-          y: { ticks: { color: '#606080' }, grid: { color: '#1e1e30' } }
+          x: { ticks: { color:'#606080', maxTicksLimit:12 }, grid:{ color:'#1e1e30' } },
+          y: { ticks: { color:'#606080' }, grid:{ color:'#1e1e30' } }
         }
       }
     });
 
-    new Chart(document.getElementById('graficoPotencia'), cfg('Potência (W)', potencias, '#facc15'));
-    new Chart(document.getElementById('graficoTensao'),   cfg('Tensão (V)',   tensoes,   '#22c55e'));
-    new Chart(document.getElementById('graficoCorrente'), cfg('Corrente (A)', correntes, '#60a5fa'));
-  });
+    new Chart(document.getElementById('graficoPotencia'), opts('Potência (W)', potencias, '#facc15'));
+    new Chart(document.getElementById('graficoTensao'),   opts('Tensão (V)',   tensoes,   '#22c55e'));
+    new Chart(document.getElementById('graficoCorrente'), opts('Corrente (A)', correntes, '#60a5fa'));
+  })
+  .catch(e => console.error('Erro ao carregar gráfico:', e));
 </script>
 {% endblock %}

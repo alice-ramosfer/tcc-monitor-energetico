@@ -2,11 +2,8 @@
 #  TCC — MONITOR ENERGÉTICO ESCOLAR
 #  app.py — Ponto de entrada principal
 #
-#  COMO RODAR:
-#    1. Ative o venv:  venv\Scripts\activate
-#    2. Execute:       python app.py
-#    3. Acesse:        http://localhost:5000
-#    Login padrão:     admin@escola.com / admin123
+#  LOCAL:    python app.py  →  http://localhost:5000
+#  RAILWAY:  gunicorn "app:create_app()" (Procfile já configurado)
 # ================================================================
 
 from flask import Flask
@@ -20,32 +17,44 @@ import os
 def create_app():
     app = Flask(__name__)
 
-    # ── Configurações ─────────────────────────────────────────
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'tcc-energia-2026-dev')
-
-    # Para usar MySQL:
-    # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:senha@localhost/tcc_energia'
-    # Para usar SQLite (mais fácil para desenvolvimento local):
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-        'DATABASE_URL',
-        'sqlite:///tcc_energia.db'   # Arquivo gerado automaticamente na pasta
+    # ── SECRET_KEY ────────────────────────────────────────────
+    # Local: usa valor padrão
+    # Railway: define a variável SECRET_KEY no painel Variables
+    app.config['SECRET_KEY'] = os.environ.get(
+        'SECRET_KEY', 'tcc-energia-2026-dev-local'
     )
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # ── Extensões ─────────────────────────────────────────────
+    # ── BANCO DE DADOS ─────────────────────────────────────────
+    # Local:   usa SQLite automaticamente (sem configuração)
+    # Railway: define DATABASE_URL no painel Variables com o MySQL
+    #          Formato: mysql+pymysql://root:SENHA@host:PORT/railway
+    db_url = os.environ.get('DATABASE_URL', 'sqlite:///tcc_energia.db')
+
+    # Railway às vezes entrega "mysql://" — corrige para "mysql+pymysql://"
+    if db_url.startswith('mysql://'):
+        db_url = db_url.replace('mysql://', 'mysql+pymysql://', 1)
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,      # Reconecta se a conexão cair
+        'pool_recycle':  300,       # Recicla conexões a cada 5 min
+    }
+
+    # ── EXTENSÕES ─────────────────────────────────────────────
     db.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = 'auth.login'
-    login_manager.login_message = 'Faça login para continuar.'
+    login_manager.login_view         = 'auth.login'
+    login_manager.login_message      = 'Faça login para continuar.'
     login_manager.login_message_category = 'warning'
 
-    # ── Blueprints (rotas) ────────────────────────────────────
+    # ── BLUEPRINTS ────────────────────────────────────────────
     app.register_blueprint(auth_bp)
     app.register_blueprint(dash_bp)
     app.register_blueprint(api_bp,  url_prefix='/api')
     app.register_blueprint(ml_bp,   url_prefix='/ml')
 
-    # ── Cria tabelas e admin padrão ───────────────────────────
+    # ── BANCO + ADMIN PADRÃO ──────────────────────────────────
     with app.app_context():
         db.create_all()
         _criar_admin_padrao()
@@ -54,30 +63,39 @@ def create_app():
 
 
 def _criar_admin_padrao():
+    """Cria admin padrão apenas se o banco estiver vazio."""
     from models import Usuario
     import bcrypt
-    if not Usuario.query.first():
-        h = bcrypt.hashpw(b'admin123', bcrypt.gensalt()).decode()
-        admin = Usuario(nome='Administrador',
-                        email='admin@escola.com',
-                        senha_hash=h,
-                        perfil='admin')
-        db.session.add(admin)
-        db.session.commit()
-        print("✓ Banco criado!")
-        print("✓ Admin: admin@escola.com / admin123")
+    try:
+        if not Usuario.query.first():
+            h = bcrypt.hashpw(b'admin123', bcrypt.gensalt()).decode()
+            admin = Usuario(
+                nome='Administrador',
+                email='admin@escola.com',
+                senha_hash=h,
+                perfil='admin'
+            )
+            db.session.add(admin)
+            db.session.commit()
+            print("✓ Admin criado: admin@escola.com / admin123")
+    except Exception as e:
+        print(f"⚠ Erro ao criar admin: {e}")
 
 
+# ── EXECUÇÃO LOCAL ────────────────────────────────────────────
 if __name__ == '__main__':
     app = create_app()
 
-    # Inicia scheduler de ML automático (roda a cada 1 hora)
+    # Scheduler de ML (roda a cada 1 hora)
     from routes.ml_routes import iniciar_scheduler
     iniciar_scheduler(app)
 
     print("\n" + "="*50)
     print("  Monitor Energético — TCC 2026")
-    print("  Acesse: http://localhost:5000")
+    print("  Local:  http://localhost:5000")
+    print("  Login:  admin@escola.com / admin123")
     print("="*50 + "\n")
 
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # debug=False em produção, True só local
+    debug = os.environ.get('FLASK_ENV') != 'production'
+    app.run(debug=debug, host='0.0.0.0', port=5000)
