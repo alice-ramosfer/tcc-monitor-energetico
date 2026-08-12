@@ -54,9 +54,21 @@ def novo_usuario():
 def reset_admin_temp():
     from models import Usuario
     from extensions import db
-    u = Usuario.query.filter_by(email='admin@escola.com').first()
-    if u:
-        u.set_senha('admin123')
+    try:
+        u = Usuario.query.filter_by(email='admin@escola.com').first()
+        if u:
+            u.set_senha('admin123')
+            db.session.commit()
+            return 'Senha resetada!'
+        novo = Usuario(
+            nome='Administrador',
+            email='admin@escola.com',
+            perfil='admin'
+        )
+        novo.set_senha('admin123')
+        db.session.add(novo)
         db.session.commit()
-        return 'Senha resetada! Apague esta rota depois.'
-    return 'Usuário não encontrado'
+        return 'Admin criado! Login: admin@escola.com / admin123'
+    except Exception as e:
+        db.session.rollback()
+        return f'Erro: {e}'
