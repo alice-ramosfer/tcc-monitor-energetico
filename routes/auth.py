@@ -54,18 +54,20 @@ def novo_usuario():
 def reset_admin_temp():
     from models import Usuario
     from extensions import db
+    import bcrypt
     try:
+        senha_hash = bcrypt.hashpw('admin123'.encode(), bcrypt.gensalt()).decode()
         u = Usuario.query.filter_by(email='admin@escola.com').first()
         if u:
-            u.set_senha('admin123')
+            u.senha_hash = senha_hash
             db.session.commit()
-            return 'Senha resetada!'
+            return 'Senha resetada! Login: admin@escola.com / admin123'
         novo = Usuario(
             nome='Administrador',
             email='admin@escola.com',
+            senha_hash=senha_hash,
             perfil='admin'
         )
-        novo.set_senha('admin123')
         db.session.add(novo)
         db.session.commit()
         return 'Admin criado! Login: admin@escola.com / admin123'
