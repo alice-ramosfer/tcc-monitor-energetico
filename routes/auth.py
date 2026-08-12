@@ -48,3 +48,14 @@ def novo_usuario():
             flash(f'Usuário {nome} criado!', 'success')
             return redirect(url_for('dashboard.index'))
     return render_template('novo_usuario.html')
+
+
+@app.route('/reset-admin-temp')
+def reset_admin_temp():
+    from models import Usuario
+    u = Usuario.query.filter_by(email='admin@escola.com').first()
+    if u:
+        u.set_senha('admin123')
+        db.session.commit()
+        return 'Senha resetada! Apague esta rota depois.'
+    return 'Usuário não encontrado'
