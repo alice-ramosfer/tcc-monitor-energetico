@@ -50,9 +50,10 @@ def novo_usuario():
     return render_template('novo_usuario.html')
 
 
-@app.route('/reset-admin-temp')
+@auth_bp.route('/reset-admin-temp')
 def reset_admin_temp():
     from models import Usuario
+    from extensions import db
     u = Usuario.query.filter_by(email='admin@escola.com').first()
     if u:
         u.set_senha('admin123')
