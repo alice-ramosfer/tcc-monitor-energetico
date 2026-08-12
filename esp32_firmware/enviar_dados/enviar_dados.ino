@@ -9,7 +9,7 @@
 
 const char* WIFI_SSID     = "Ravic";
 const char* WIFI_PASSWORD = "19941613";
-const char* SERVER_URL    = "http://192.168.100.1:5000/api/dados"; // ou URL Railway
+const char* SERVER_URL    = "https://web-production-0994b.up.railway.app/api/dados"; // ou URL Railway
 const char* API_KEY       = "tcc-esp32-2026";
 const unsigned long INTERVALO = 10000;
 

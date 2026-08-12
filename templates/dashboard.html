@@ -1,198 +1,355 @@
 {% extends "base.html" %}
-{% block title %}Dashboard — Monitor Energético{% endblock %}
+{% block title %}Dashboard · Monitor Energético · Ensina Mais{% endblock %}
 
 {% block content %}
-<!-- Cabeçalho -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <div>
-    <h5 class="mb-0 fw-bold"><i class="bi bi-speedometer2 me-2 text-purple"></i>Visão Geral</h5>
-    <small class="text-muted">Atualiza automaticamente a cada 10 segundos</small>
-  </div>
-  <div class="d-flex gap-2 align-items-center">
-    <span class="live-dot"></span>
-    <span class="text-muted small" id="status-ml"></span>
-    <button class="btn btn-purple btn-sm" onclick="rodarML()">
-      <i class="bi bi-cpu me-1"></i>Rodar ML
-    </button>
-    <button class="btn btn-outline-secondary btn-sm" onclick="simularDados()">
-      <i class="bi bi-database me-1"></i>Simular dados
-    </button>
-  </div>
-</div>
+<div class="container-fluid px-4 pb-4">
 
-<!-- Cards dos 3 circuitos -->
-<div class="row g-3 mb-4">
-  {% set cores = {'sala_aula': 'success', 'robotica': 'info', 'recepcao': 'warning'} %}
-  {% set icones = {'sala_aula': 'building', 'robotica': 'robot', 'recepcao': 'door-open'} %}
-
-  {% for card in cards %}
-  <div class="col-md-4">
-    <div class="card-metric">
-      <!-- Header -->
-      <div class="card-metric-header">
-        <span class="fw-600">
-          <i class="bi bi-{{ icones[card.circuito] }} me-2"></i>{{ card.nome }}
+  <!-- HERO STRIP -->
+  <div class="hero-strip mb-4">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+      <div>
+        <h1><i class="bi bi-lightning-charge-fill me-2" style="color:var(--amarelo)"></i>Monitor Energético</h1>
+        <div class="hero-sub">
+          <i class="bi bi-building me-1"></i>Ensina Mais · Juiz de Fora, MG &nbsp;·&nbsp;
+          3 circuitos monitorados em tempo real
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="live-pill">
+          <span class="live-dot" style="background:#fff"></span>
+          Ao vivo · atualiza em 10s
         </span>
-        {% if card.anomalias24 > 0 %}
-        <span class="badge-anom">
-          <i class="bi bi-exclamation-triangle me-1"></i>{{ card.anomalias24 }} anomalia(s)
-        </span>
-        {% else %}
-        <span class="badge-ok">
-          <i class="bi bi-check-circle me-1"></i>Normal
-        </span>
-        {% endif %}
+        <a href="/api/simular?n=60" class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-weight:600;border-radius:var(--radius-sm)">
+          <i class="bi bi-play-fill me-1"></i>Simular dados
+        </a>
       </div>
-
-      <!-- Métricas -->
-      {% if card.ultima %}
-      <div class="row g-2 text-center my-2">
-        <div class="col-4">
-          <div class="metrica-box" style="border-color:#22c55e22">
-            <div class="metrica-val text-success" id="{{ card.circuito }}-tensao">
-              {{ '%.1f'|format(card.ultima.tensao or 0) }}
-            </div>
-            <div class="metrica-un">V</div>
-          </div>
-        </div>
-        <div class="col-4">
-          <div class="metrica-box" style="border-color:#60a5fa22">
-            <div class="metrica-val text-info" id="{{ card.circuito }}-corrente">
-              {{ '%.2f'|format(card.ultima.corrente or 0) }}
-            </div>
-            <div class="metrica-un">A</div>
-          </div>
-        </div>
-        <div class="col-4">
-          <div class="metrica-box" style="border-color:#facc1522">
-            <div class="metrica-val text-warning" id="{{ card.circuito }}-potencia">
-              {{ '%.0f'|format(card.ultima.potencia or 0) }}
-            </div>
-            <div class="metrica-un">W</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="row g-1 text-center mb-2">
-        <div class="col-4">
-          <small class="text-muted">FP</small><br>
-          <small class="text-light" id="{{ card.circuito }}-fp">
-            {{ '%.2f'|format(card.ultima.fator_potencia or 0) }}
-          </small>
-        </div>
-        <div class="col-4">
-          <small class="text-muted">kWh</small><br>
-          <small class="text-light" id="{{ card.circuito }}-kwh">
-            {{ '%.3f'|format(card.ultima.energia_kwh or 0) }}
-          </small>
-        </div>
-        <div class="col-4">
-          <small class="text-muted">Hz</small><br>
-          <small class="text-light" id="{{ card.circuito }}-hz">
-            {{ '%.1f'|format(card.ultima.frequencia or 0) }}
-          </small>
-        </div>
-      </div>
-
-      <small class="text-muted d-block text-center mb-2">
-        <i class="bi bi-clock me-1"></i>{{ card.ultima.timestamp.strftime('%d/%m %H:%M') }}
-      </small>
-      {% else %}
-      <div class="text-center py-3 my-2">
-        <i class="bi bi-wifi-off text-muted" style="font-size:2rem"></i>
-        <p class="text-muted small mt-2 mb-0">Aguardando ESP32...</p>
-      </div>
-      {% endif %}
-
-      <a href="/circuito/{{ card.circuito }}" class="btn btn-outline-secondary btn-sm w-100">
-        Ver gráficos <i class="bi bi-arrow-right ms-1"></i>
-      </a>
     </div>
   </div>
-  {% endfor %}
-</div>
 
-<!-- Tabela de anomalias -->
-<div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <span>
-      <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
-      Últimas Anomalias — Isolation Forest (ML)
-    </span>
-    <a href="/ml-dashboard" class="btn btn-outline-secondary btn-sm">Ver todas</a>
-  </div>
-  <div class="card-body p-0">
-    {% if anomalias %}
-    <div class="table-responsive">
-      <table class="table table-dark table-hover mb-0 small">
-        <thead><tr>
-          <th>Circuito</th><th>Algoritmo</th><th>Score</th>
-          <th>Descrição</th><th>Quando</th>
-        </tr></thead>
-        <tbody>
-          {% for a in anomalias %}
-          <tr>
-            <td><span class="badge bg-secondary">{{ a.circuito }}</span></td>
-            <td><code class="text-warning">{{ a.algoritmo }}</code></td>
-            <td><span class="text-danger">{{ '%.4f'|format(a.score) }}</span></td>
-            <td class="text-muted">{{ a.descricao[:90] if a.descricao else '—' }}{% if a.descricao and a.descricao|length > 90 %}...{% endif %}</td>
-            <td><small class="text-muted">{{ a.timestamp.strftime('%d/%m %H:%M') }}</small></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+  <!-- KPI STRIP -->
+  <div class="kpi-strip mb-4" id="kpi-strip">
+    <div class="kpi-card">
+      <div class="kpi-icon ama"><i class="bi bi-activity"></i></div>
+      <div>
+        <div class="kpi-val" id="kpi-potencia-total">— W</div>
+        <div class="kpi-label">Potência total agora</div>
+      </div>
     </div>
-    {% else %}
-    <div class="text-center py-4">
-      <i class="bi bi-check-circle text-success" style="font-size:2rem"></i>
-      <p class="text-muted mt-2 mb-0">Nenhuma anomalia detectada ainda.<br>
-      <small>Rode o ML após coletar dados por pelo menos 1 dia.</small></p>
+    <div class="kpi-card">
+      <div class="kpi-icon vrd"><i class="bi bi-database"></i></div>
+      <div>
+        <div class="kpi-val" id="kpi-kwh-total">— kWh</div>
+        <div class="kpi-label">Energia acumulada total</div>
+      </div>
     </div>
-    {% endif %}
+    <div class="kpi-card">
+      <div class="kpi-icon rox"><i class="bi bi-exclamation-triangle"></i></div>
+      <div>
+        <div class="kpi-val" id="kpi-anomalias">—</div>
+        <div class="kpi-label">Anomalias detectadas</div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon lnj"><i class="bi bi-currency-dollar"></i></div>
+      <div>
+        <div class="kpi-val" id="kpi-custo">R$ —</div>
+        <div class="kpi-label">Custo estimado (mês)</div>
+      </div>
+    </div>
   </div>
+
+  <!-- CARDS DOS 3 CIRCUITOS -->
+  <div class="section-title">
+    <i class="bi bi-grid-3x3-gap" style="color:var(--roxo)"></i>
+    Circuitos monitorados
+    <span class="pill">3 ativos</span>
+  </div>
+
+  <div class="row g-3 mb-4" id="circuitos-row">
+
+    <!-- D1 — Sala de Aula -->
+    <div class="col-12 col-md-4">
+      <div class="card-circuito circ-sala h-100">
+        <div class="circ-header">
+          <div class="circ-icon"><i class="bi bi-book-fill"></i></div>
+          <div>
+            <div class="circ-title">Sala de Aula</div>
+            <div class="circ-sub">Circuito D1 · Disj. C40</div>
+          </div>
+          <span class="ms-auto badge-ok" id="status-sala_aula">OK</span>
+        </div>
+        <div class="px-3 pb-3">
+          <div class="metrica-grid">
+            <div class="metrica-box">
+              <div class="metrica-val val-tensao" id="v-sala_aula">—</div>
+              <div class="metrica-un">V</div>
+              <div class="metrica-label">Tensão</div>
+            </div>
+            <div class="metrica-box">
+              <div class="metrica-val val-corrente" id="i-sala_aula">—</div>
+              <div class="metrica-un">A</div>
+              <div class="metrica-label">Corrente</div>
+            </div>
+            <div class="metrica-box">
+              <div class="metrica-val val-potencia" id="p-sala_aula">—</div>
+              <div class="metrica-un">W</div>
+              <div class="metrica-label">Potência</div>
+            </div>
+            <div class="metrica-box">
+              <div class="metrica-val val-kwh" id="kwh-sala_aula">—</div>
+              <div class="metrica-un">kWh</div>
+              <div class="metrica-label">Energia</div>
+            </div>
+            <div class="metrica-box">
+              <div class="metrica-val val-fp" id="fp-sala_aula">—</div>
+              <div class="metrica-un">FP</div>
+              <div class="metrica-label">Fat. Pot.</div>
+            </div>
+            <div class="metrica-box">
+              <div class="metrica-val val-freq" id="hz-sala_aula">—</div>
+              <div class="metrica-un">Hz</div>
+              <div class="metrica-label">Freq.</div>
+            </div>
+          </div>
+          <a href="/circuito/sala_aula" class="btn btn-sm btn-purple w-100 mt-3">
+            <i class="bi bi-graph-up me-1"></i>Ver histórico e gráficos
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- D2 — Robótica -->
+    <div class="col-12 col-md-4">
+      <div class="card-circuito circ-robot h-100">
+        <div class="circ-header">
+          <div class="circ-icon"><i class="bi bi-robot"></i></div>
+          <div>
+            <div class="circ-title">Sala de Robótica</div>
+            <div class="circ-sub">Circuito D2 · Disj. C32</div>
+          </div>
+          <span class="ms-auto badge-ok" id="status-robotica">OK</span>
+        </div>
+        <div class="px-3 pb-3">
+          <div class="metrica-grid">
+            <div class="metrica-box">
+              <div class="metrica-val val-tensao" id="v-robotica">—</div>
+              <div class="metrica-un">V</div>
+              <div class="metrica-label">Tensão</div>
+            </div>
+            <div class="metrica-box">
+              <div class="metrica-val val-corrente" id="i-robotica">—</div>
+              <div class="metrica-un">A</div>
+              <div class="metrica-label">Corrente</div>
+            </div>
+            <div class="metrica-box">
+              <div class="metrica-val val-potencia" id="p-robotica">—</div>
+              <div class="metrica-un">W</div>
+              <div class="metrica-label">Potência</div>
+            </div>
+            <div class="metrica-box">
+              <div class="metrica-val val-kwh" id="kwh-robotica">—</div>
+              <div class="metrica-un">kWh</div>
+              <div class="metrica-label">Energia</div>
+            </div>
+            <div class="metrica-box">
+              <div class="metrica-val val-fp" id="fp-robotica">—</div>
+              <div class="metrica-un">FP</div>
+              <div class="metrica-label">Fat. Pot.</div>
+            </div>
+            <div class="metrica-box">
+              <div class="metrica-val val-freq" id="hz-robotica">—</div>
+              <div class="metrica-un">Hz</div>
+              <div class="metrica-label">Freq.</div>
+            </div>
+          </div>
+          <a href="/circuito/robotica" class="btn btn-sm btn-purple w-100 mt-3">
+            <i class="bi bi-graph-up me-1"></i>Ver histórico e gráficos
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- D3 — Recepção -->
+    <div class="col-12 col-md-4">
+      <div class="card-circuito circ-recep h-100">
+        <div class="circ-header">
+          <div class="circ-icon"><i class="bi bi-door-open-fill"></i></div>
+          <div>
+            <div class="circ-title">Recepção</div>
+            <div class="circ-sub">Circuito D3 · Disj. C32</div>
+          </div>
+          <span class="ms-auto badge-ok" id="status-recepcao">OK</span>
+        </div>
+        <div class="px-3 pb-3">
+          <div class="metrica-grid">
+            <div class="metrica-box">
+              <div class="metrica-val val-tensao" id="v-recepcao">—</div>
+              <div class="metrica-un">V</div>
+              <div class="metrica-label">Tensão</div>
+            </div>
+            <div class="metrica-box">
+              <div class="metrica-val val-corrente" id="i-recepcao">—</div>
+              <div class="metrica-un">A</div>
+              <div class="metrica-label">Corrente</div>
+            </div>
+            <div class="metrica-box">
+              <div class="metrica-val val-potencia" id="p-recepcao">—</div>
+              <div class="metrica-un">W</div>
+              <div class="metrica-label">Potência</div>
+            </div>
+            <div class="metrica-box">
+              <div class="metrica-val val-kwh" id="kwh-recepcao">—</div>
+              <div class="metrica-un">kWh</div>
+              <div class="metrica-label">Energia</div>
+            </div>
+            <div class="metrica-box">
+              <div class="metrica-val val-fp" id="fp-recepcao">—</div>
+              <div class="metrica-un">FP</div>
+              <div class="metrica-label">Fat. Pot.</div>
+            </div>
+            <div class="metrica-box">
+              <div class="metrica-val val-freq" id="hz-recepcao">—</div>
+              <div class="metrica-un">Hz</div>
+              <div class="metrica-label">Freq.</div>
+            </div>
+          </div>
+          <a href="/circuito/recepcao" class="btn btn-sm btn-purple w-100 mt-3">
+            <i class="bi bi-graph-up me-1"></i>Ver histórico e gráficos
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRÁFICO POTÊNCIA + ÚLTIMAS ANOMALIAS -->
+  <div class="row g-3">
+    <div class="col-12 col-lg-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-graph-up me-2" style="color:var(--roxo)"></i>Potência em tempo real — 24h</span>
+          <div class="d-flex gap-2">
+            <span class="chip-circuito chip-sala"><i class="bi bi-square-fill"></i>Sala</span>
+            <span class="chip-circuito chip-robot"><i class="bi bi-square-fill"></i>Robótica</span>
+            <span class="chip-circuito chip-recep"><i class="bi bi-square-fill"></i>Recepção</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <canvas id="grafico-potencia" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-exclamation-triangle me-2" style="color:var(--vermelho)"></i>Últimas anomalias</span>
+          <a href="/ml-dashboard" class="btn btn-sm btn-purple px-3">Ver ML</a>
+        </div>
+        <div class="card-body p-0">
+          <div id="lista-anomalias" style="max-height:260px;overflow-y:auto">
+            <div class="text-center py-4 text-muted-em">
+              <i class="bi bi-check-circle" style="font-size:1.5rem;color:var(--verde)"></i>
+              <div class="mt-2">Sem anomalias recentes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-const CIRCUITOS = ['sala_aula', 'robotica', 'recepcao'];
+// ── Cores Ensina Mais ──
+const COR = {
+  sala:   { border:'#1A73E8', bg:'rgba(26,115,232,.08)' },
+  robot:  { border:'#2EC866', bg:'rgba(46,200,102,.08)' },
+  recep:  { border:'#FF6B35', bg:'rgba(255,107,53,.08)' },
+};
 
-// Atualiza valores em tempo real a cada 10s
-function atualizarDados() {
-  fetch('/api/resumo')
-    .then(r => r.json())
-    .then(data => {
-      for (const [c, d] of Object.entries(data)) {
-        if (!d) continue;
-        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        set(`${c}-tensao`,   d.tensao?.toFixed(1)  ?? '—');
-        set(`${c}-corrente`, d.corrente?.toFixed(2) ?? '—');
-        set(`${c}-potencia`, d.potencia?.toFixed(0) ?? '—');
-        set(`${c}-fp`,       d.fator_potencia?.toFixed(2) ?? '—');
-        set(`${c}-kwh`,      d.energia_kwh?.toFixed(3) ?? '—');
-        set(`${c}-hz`,       d.frequencia?.toFixed(1) ?? '—');
-      }
-    })
-    .catch(console.error);
+const ctx = document.getElementById('grafico-potencia').getContext('2d');
+const chart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [
+      { label:'Sala de Aula', data:[], borderColor:COR.sala.border, backgroundColor:COR.sala.bg, borderWidth:2, tension:.4, fill:true, pointRadius:0 },
+      { label:'Robótica',     data:[], borderColor:COR.robot.border,backgroundColor:COR.robot.bg,borderWidth:2, tension:.4, fill:true, pointRadius:0 },
+      { label:'Recepção',     data:[], borderColor:COR.recep.border,backgroundColor:COR.recep.bg,borderWidth:2, tension:.4, fill:true, pointRadius:0 },
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:true,
+    animation:{ duration:400 },
+    plugins:{ legend:{ display:false }, tooltip:{ mode:'index', intersect:false, callbacks:{
+      label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(1)} W`
+    }}},
+    scales:{
+      x:{ grid:{ color:'rgba(0,0,0,.05)' }, ticks:{ font:{size:11}, maxTicksLimit:8, color:'#6B6B8A' }},
+      y:{ grid:{ color:'rgba(0,0,0,.05)' }, ticks:{ font:{size:11}, color:'#6B6B8A', callback: v => v+'W' }, beginAtZero:true }
+    }
+  }
+});
+
+async function atualizar() {
+  try {
+    const r = await fetch('/api/resumo');
+    const d = await r.json();
+    let ptotal=0, kwhtotal=0;
+
+    ['sala_aula','robotica','recepcao'].forEach(c => {
+      const info = d[c];
+      if (!info) return;
+      const pref = c === 'sala_aula' ? 'sala_aula' : c;
+      ['v','i','p','kwh','fp','hz'].forEach(k => {
+        const el = document.getElementById(k+'-'+pref);
+        if (el) el.textContent = info[k]?.toFixed(k==='hz'?1:2) ?? '—';
+      });
+      ptotal += info.p || 0;
+      kwhtotal += info.kwh || 0;
+    });
+
+    document.getElementById('kpi-potencia-total').textContent = ptotal.toFixed(0)+' W';
+    document.getElementById('kpi-kwh-total').textContent = kwhtotal.toFixed(2)+' kWh';
+    const custo = kwhtotal * 0.80;
+    document.getElementById('kpi-custo').textContent = 'R$ '+custo.toFixed(2);
+
+    // Gráfico
+    const hist = await fetch('/api/historico/sala_aula?horas=24').then(r=>r.json());
+    const h2   = await fetch('/api/historico/robotica?horas=24').then(r=>r.json());
+    const h3   = await fetch('/api/historico/recepcao?horas=24').then(r=>r.json());
+    const labels = hist.map(x => x.hora || x.timestamp?.substring(11,16));
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = hist.map(x=>x.potencia);
+    chart.data.datasets[1].data = h2.map(x=>x.potencia);
+    chart.data.datasets[2].data = h3.map(x=>x.potencia);
+    chart.update('none');
+
+    // Anomalias
+    const anom = await fetch('/api/anomalias?limit=6').then(r=>r.json()).catch(()=>[]);
+    const lista = document.getElementById('lista-anomalias');
+    if (anom.length) {
+      document.getElementById('kpi-anomalias').textContent = anom.length;
+      lista.innerHTML = anom.map(a => `
+        <div class="d-flex align-items-start gap-2 px-3 py-2" style="border-bottom:1px solid var(--border)">
+          <i class="bi bi-exclamation-triangle-fill mt-1" style="color:var(--vermelho);font-size:.85rem;flex-shrink:0"></i>
+          <div>
+            <div style="font-size:.78rem;font-weight:600;color:var(--text)">${a.circuito?.replace('_',' ')} · ${a.algoritmo}</div>
+            <div style="font-size:.72rem;color:var(--muted)">${a.descricao || 'Anomalia detectada'}</div>
+            <div style="font-size:.7rem;color:var(--muted)">${a.timestamp?.substring(0,16).replace('T',' ') || ''}</div>
+          </div>
+        </div>`).join('');
+    } else {
+      document.getElementById('kpi-anomalias').textContent = '0';
+    }
+
+  } catch(e){ console.warn(e); }
 }
 
-setInterval(atualizarDados, 10000);
-
-function rodarML() {
-  const s = document.getElementById('status-ml');
-  s.textContent = 'Executando ML...';
-  fetch('/ml/rodar', { method: 'POST' })
-    .then(r => r.json())
-    .then(d => { s.textContent = d.mensagem; setTimeout(() => location.reload(), 2000); })
-    .catch(() => s.textContent = 'Erro ao executar ML.');
-}
-
-function simularDados() {
-  if (!confirm('Inserir 200 leituras simuladas no banco para testar o ML?')) return;
-  fetch('/api/simular?n=200', { method: 'POST' })
-    .then(r => r.json())
-    .then(d => { alert(`✓ ${d.leituras} leituras inseridas! Agora rode o ML.`); location.reload(); })
-    .catch(() => alert('Erro ao simular dados.'));
-}
+atualizar();
+setInterval(atualizar, 10000);
 </script>
 {% endblock %}
