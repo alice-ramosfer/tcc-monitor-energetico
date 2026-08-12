@@ -67,19 +67,15 @@ def _criar_admin_padrao():
     from models import Usuario
     import bcrypt
     try:
-        if not Usuario.query.first():
-            h = bcrypt.hashpw(b'admin123', bcrypt.gensalt()).decode()
-            admin = Usuario(
-                nome='Administrador',
-                email='admin@escola.com',
-                senha_hash=h,
-                perfil='admin'
-            )
+        if not Usuario.query.filter_by(email='admin@escola.com').first():
+            admin = Usuario(nome='Administrador', email='admin@escola.com', perfil='admin')
+            admin.set_senha('admin123')
             db.session.add(admin)
             db.session.commit()
-            print("✓ Admin criado: admin@escola.com / admin123")
+            print('✓ Admin criado: admin@escola.com / admin123')
     except Exception as e:
-        print(f"⚠ Erro ao criar admin: {e}")
+        db.session.rollback()
+        print(f'⚠ Erro ao criar admin: {e}')
 
 
 # ── EXECUÇÃO LOCAL ────────────────────────────────────────────
