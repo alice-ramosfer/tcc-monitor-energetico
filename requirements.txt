@@ -5,8 +5,7 @@ numpy==1.24.3
 scikit-learn==1.2.2
 pandas==1.5.3
 bcrypt==4.1.2
-pymysql==1.1.0
-cryptography==41.0.7
+psycopg2-binary==2.9.9
 plotly==5.18.0
 apscheduler==3.10.4
 python-dotenv==1.0.0

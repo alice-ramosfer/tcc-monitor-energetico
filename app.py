@@ -32,7 +32,7 @@ def create_app():
 
     # Railway às vezes entrega "mysql://" — corrige para "mysql+pymysql://"
     if db_url.startswith('mysql://'):
-        db_url = db_url.replace('mysql://', 'mysql+pymysql://', 1)
+        db_url = db_url.replace('postgres://', 'postgresql://')
 
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
