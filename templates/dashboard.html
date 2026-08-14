@@ -1,258 +1,156 @@
 {% extends "base.html" %}
-{% block title %}Dashboard · Monitor Energético · Ensina Mais{% endblock %}
+{% block title %}Dashboard · Monitor Energético{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4 pb-4">
 
-  <!-- HERO STRIP -->
-  <div class="hero-strip mb-4">
-    <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+<!-- HERO -->
+<div class="hero">
+  <h1>Monitor Energético</h1>
+  <div class="hero-right">
+    <span class="live-badge">
+      <span class="live-dot"></span>
+      Ao vivo · atualiza em 10s
+    </span>
+    <a href="/api/simular?n=200" class="btn-simular">
+      <i class="bi bi-play-fill"></i> Simular dados
+    </a>
+  </div>
+</div>
+
+<!-- KPI -->
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-icon y"><i class="bi bi-lightning-charge-fill"></i></div>
+    <div>
+      <div class="kpi-val" id="kpi-pot">0 W</div>
+      <div class="kpi-lbl">Potência total agora</div>
+    </div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon g"><i class="bi bi-database-fill"></i></div>
+    <div>
+      <div class="kpi-val" id="kpi-kwh">0.00 kWh</div>
+      <div class="kpi-lbl">Energia acumulada total</div>
+    </div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon o"><i class="bi bi-exclamation-triangle-fill"></i></div>
+    <div>
+      <div class="kpi-val" id="kpi-anom">—</div>
+      <div class="kpi-lbl">Anomalias detectadas</div>
+    </div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon s"><i class="bi bi-currency-dollar"></i></div>
+    <div>
+      <div class="kpi-val" id="kpi-custo">R$ 0.00</div>
+      <div class="kpi-lbl">Custo estimado (mês)</div>
+    </div>
+  </div>
+</div>
+
+<!-- CIRCUITOS -->
+<div class="sec-hd">
+  <i class="bi bi-grid-3x3-gap-fill"></i>
+  Circuitos monitorados
+  <span class="sec-badge">3 ativos</span>
+</div>
+
+<div class="circ-grid">
+
+  <!-- D1 Sala de Aula -->
+  <div class="circ-card sala">
+    <div class="circ-head">
+      <div class="circ-ico"><i class="bi bi-book-fill"></i></div>
       <div>
-        <h1><i class="bi bi-lightning-charge-fill me-2" style="color:var(--amarelo)"></i>Monitor Energético</h1>
-        <div class="hero-sub">
-          <i class="bi bi-building me-1"></i>Ensina Mais · Juiz de Fora, MG &nbsp;·&nbsp;
-          3 circuitos monitorados em tempo real
-        </div>
+        <div class="circ-name">Sala de Aula</div>
+        <div class="circ-sub">Circuito D1 · Disj. C40</div>
       </div>
-      <div class="d-flex align-items-center gap-2 flex-wrap">
-        <span class="live-pill">
-          <span class="live-dot" style="background:#fff"></span>
-          Ao vivo · atualiza em 10s
-        </span>
-        <a href="/api/simular?n=60" class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-weight:600;border-radius:var(--radius-sm)">
-          <i class="bi bi-play-fill me-1"></i>Simular dados
-        </a>
+      <span class="badge-ok" id="st-sala_aula">OK</span>
+    </div>
+    <div class="met-grid">
+      <div class="met-box"><div class="met-val" id="v-sala_aula">—</div><div class="met-unit">V</div><div class="met-lbl">Tensão</div></div>
+      <div class="met-box"><div class="met-val" id="i-sala_aula">—</div><div class="met-unit">A</div><div class="met-lbl">Corrente</div></div>
+      <div class="met-box"><div class="met-val" id="p-sala_aula">—</div><div class="met-unit">W</div><div class="met-lbl">Potência</div></div>
+      <div class="met-box"><div class="met-val" id="kwh-sala_aula">—</div><div class="met-unit">kWh</div><div class="met-lbl">Energia</div></div>
+      <div class="met-box"><div class="met-val" id="fp-sala_aula">—</div><div class="met-unit">FP</div><div class="met-lbl">Fat. Pot.</div></div>
+      <div class="met-box"><div class="met-val" id="hz-sala_aula">—</div><div class="met-unit">Hz</div><div class="met-lbl">Freq.</div></div>
+    </div>
+    <a href="/circuito/sala_aula" class="btn-hist"><i class="bi bi-graph-up me-1"></i> Ver histórico e gráficos</a>
+  </div>
+
+  <!-- D2 Robótica -->
+  <div class="circ-card robot">
+    <div class="circ-head">
+      <div class="circ-ico"><i class="bi bi-tools"></i></div>
+      <div>
+        <div class="circ-name">Sala de Robótica</div>
+        <div class="circ-sub">Circuito D2 · Disj. C32</div>
       </div>
+      <span class="badge-ok" id="st-robotica">OK</span>
+    </div>
+    <div class="met-grid">
+      <div class="met-box"><div class="met-val" id="v-robotica">—</div><div class="met-unit">V</div><div class="met-lbl">Tensão</div></div>
+      <div class="met-box"><div class="met-val" id="i-robotica">—</div><div class="met-unit">A</div><div class="met-lbl">Corrente</div></div>
+      <div class="met-box"><div class="met-val" id="p-robotica">—</div><div class="met-unit">W</div><div class="met-lbl">Potência</div></div>
+      <div class="met-box"><div class="met-val" id="kwh-robotica">—</div><div class="met-unit">kWh</div><div class="met-lbl">Energia</div></div>
+      <div class="met-box"><div class="met-val" id="fp-robotica">—</div><div class="met-unit">FP</div><div class="met-lbl">Fat. Pot.</div></div>
+      <div class="met-box"><div class="met-val" id="hz-robotica">—</div><div class="met-unit">Hz</div><div class="met-lbl">Freq.</div></div>
+    </div>
+    <a href="/circuito/robotica" class="btn-hist"><i class="bi bi-graph-up me-1"></i> Ver histórico e gráficos</a>
+  </div>
+
+  <!-- D3 Recepção -->
+  <div class="circ-card recep">
+    <div class="circ-head">
+      <div class="circ-ico"><i class="bi bi-person-lines-fill"></i></div>
+      <div>
+        <div class="circ-name">Recepção</div>
+        <div class="circ-sub">Circuito D3 · Disj. C32</div>
+      </div>
+      <span class="badge-ok" id="st-recepcao">OK</span>
+    </div>
+    <div class="met-grid">
+      <div class="met-box"><div class="met-val" id="v-recepcao">—</div><div class="met-unit">V</div><div class="met-lbl">Tensão</div></div>
+      <div class="met-box"><div class="met-val" id="i-recepcao">—</div><div class="met-unit">A</div><div class="met-lbl">Corrente</div></div>
+      <div class="met-box"><div class="met-val" id="p-recepcao">—</div><div class="met-unit">W</div><div class="met-lbl">Potência</div></div>
+      <div class="met-box"><div class="met-val" id="kwh-recepcao">—</div><div class="met-unit">kWh</div><div class="met-lbl">Energia</div></div>
+      <div class="met-box"><div class="met-val" id="fp-recepcao">—</div><div class="met-unit">FP</div><div class="met-lbl">Fat. Pot.</div></div>
+      <div class="met-box"><div class="met-val" id="hz-recepcao">—</div><div class="met-unit">Hz</div><div class="met-lbl">Freq.</div></div>
+    </div>
+    <a href="/circuito/recepcao" class="btn-hist"><i class="bi bi-graph-up me-1"></i> Ver histórico e gráficos</a>
+  </div>
+
+</div>
+
+<!-- GRÁFICO + ANOMALIAS -->
+<div class="bottom-row">
+
+  <div class="panel">
+    <div class="panel-hd">
+      <i class="bi bi-graph-up" style="color:#3B82F6"></i>
+      Potência em tempo real — 24h
+      <div class="chart-legend">
+        <span class="leg-item"><span class="leg-dot" style="background:#3B82F6"></span>Sala</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#22C55E"></span>Robótica</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#F59E0B"></span>Recepção</span>
+      </div>
+    </div>
+    <div class="panel-body">
+      <canvas id="chart-pot" height="160"></canvas>
     </div>
   </div>
 
-  <!-- KPI STRIP -->
-  <div class="kpi-strip mb-4" id="kpi-strip">
-    <div class="kpi-card">
-      <div class="kpi-icon ama"><i class="bi bi-activity"></i></div>
-      <div>
-        <div class="kpi-val" id="kpi-potencia-total">— W</div>
-        <div class="kpi-label">Potência total agora</div>
-      </div>
+  <div class="panel">
+    <div class="panel-hd">
+      <i class="bi bi-exclamation-triangle-fill" style="color:#F59E0B"></i>
+      Últimas anomalias
+      <a href="/ml-dashboard" class="btn-ver-ml">Ver ML</a>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-icon vrd"><i class="bi bi-database"></i></div>
-      <div>
-        <div class="kpi-val" id="kpi-kwh-total">— kWh</div>
-        <div class="kpi-label">Energia acumulada total</div>
-      </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-icon rox"><i class="bi bi-exclamation-triangle"></i></div>
-      <div>
-        <div class="kpi-val" id="kpi-anomalias">—</div>
-        <div class="kpi-label">Anomalias detectadas</div>
-      </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-icon lnj"><i class="bi bi-currency-dollar"></i></div>
-      <div>
-        <div class="kpi-val" id="kpi-custo">R$ —</div>
-        <div class="kpi-label">Custo estimado (mês)</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- CARDS DOS 3 CIRCUITOS -->
-  <div class="section-title">
-    <i class="bi bi-grid-3x3-gap" style="color:var(--roxo)"></i>
-    Circuitos monitorados
-    <span class="pill">3 ativos</span>
-  </div>
-
-  <div class="row g-3 mb-4" id="circuitos-row">
-
-    <!-- D1 — Sala de Aula -->
-    <div class="col-12 col-md-4">
-      <div class="card-circuito circ-sala h-100">
-        <div class="circ-header">
-          <div class="circ-icon"><i class="bi bi-book-fill"></i></div>
-          <div>
-            <div class="circ-title">Sala de Aula</div>
-            <div class="circ-sub">Circuito D1 · Disj. C40</div>
-          </div>
-          <span class="ms-auto badge-ok" id="status-sala_aula">OK</span>
-        </div>
-        <div class="px-3 pb-3">
-          <div class="metrica-grid">
-            <div class="metrica-box">
-              <div class="metrica-val val-tensao" id="v-sala_aula">—</div>
-              <div class="metrica-un">V</div>
-              <div class="metrica-label">Tensão</div>
-            </div>
-            <div class="metrica-box">
-              <div class="metrica-val val-corrente" id="i-sala_aula">—</div>
-              <div class="metrica-un">A</div>
-              <div class="metrica-label">Corrente</div>
-            </div>
-            <div class="metrica-box">
-              <div class="metrica-val val-potencia" id="p-sala_aula">—</div>
-              <div class="metrica-un">W</div>
-              <div class="metrica-label">Potência</div>
-            </div>
-            <div class="metrica-box">
-              <div class="metrica-val val-kwh" id="kwh-sala_aula">—</div>
-              <div class="metrica-un">kWh</div>
-              <div class="metrica-label">Energia</div>
-            </div>
-            <div class="metrica-box">
-              <div class="metrica-val val-fp" id="fp-sala_aula">—</div>
-              <div class="metrica-un">FP</div>
-              <div class="metrica-label">Fat. Pot.</div>
-            </div>
-            <div class="metrica-box">
-              <div class="metrica-val val-freq" id="hz-sala_aula">—</div>
-              <div class="metrica-un">Hz</div>
-              <div class="metrica-label">Freq.</div>
-            </div>
-          </div>
-          <a href="/circuito/sala_aula" class="btn btn-sm btn-purple w-100 mt-3">
-            <i class="bi bi-graph-up me-1"></i>Ver histórico e gráficos
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- D2 — Robótica -->
-    <div class="col-12 col-md-4">
-      <div class="card-circuito circ-robot h-100">
-        <div class="circ-header">
-          <div class="circ-icon"><i class="bi bi-robot"></i></div>
-          <div>
-            <div class="circ-title">Sala de Robótica</div>
-            <div class="circ-sub">Circuito D2 · Disj. C32</div>
-          </div>
-          <span class="ms-auto badge-ok" id="status-robotica">OK</span>
-        </div>
-        <div class="px-3 pb-3">
-          <div class="metrica-grid">
-            <div class="metrica-box">
-              <div class="metrica-val val-tensao" id="v-robotica">—</div>
-              <div class="metrica-un">V</div>
-              <div class="metrica-label">Tensão</div>
-            </div>
-            <div class="metrica-box">
-              <div class="metrica-val val-corrente" id="i-robotica">—</div>
-              <div class="metrica-un">A</div>
-              <div class="metrica-label">Corrente</div>
-            </div>
-            <div class="metrica-box">
-              <div class="metrica-val val-potencia" id="p-robotica">—</div>
-              <div class="metrica-un">W</div>
-              <div class="metrica-label">Potência</div>
-            </div>
-            <div class="metrica-box">
-              <div class="metrica-val val-kwh" id="kwh-robotica">—</div>
-              <div class="metrica-un">kWh</div>
-              <div class="metrica-label">Energia</div>
-            </div>
-            <div class="metrica-box">
-              <div class="metrica-val val-fp" id="fp-robotica">—</div>
-              <div class="metrica-un">FP</div>
-              <div class="metrica-label">Fat. Pot.</div>
-            </div>
-            <div class="metrica-box">
-              <div class="metrica-val val-freq" id="hz-robotica">—</div>
-              <div class="metrica-un">Hz</div>
-              <div class="metrica-label">Freq.</div>
-            </div>
-          </div>
-          <a href="/circuito/robotica" class="btn btn-sm btn-purple w-100 mt-3">
-            <i class="bi bi-graph-up me-1"></i>Ver histórico e gráficos
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- D3 — Recepção -->
-    <div class="col-12 col-md-4">
-      <div class="card-circuito circ-recep h-100">
-        <div class="circ-header">
-          <div class="circ-icon"><i class="bi bi-door-open-fill"></i></div>
-          <div>
-            <div class="circ-title">Recepção</div>
-            <div class="circ-sub">Circuito D3 · Disj. C32</div>
-          </div>
-          <span class="ms-auto badge-ok" id="status-recepcao">OK</span>
-        </div>
-        <div class="px-3 pb-3">
-          <div class="metrica-grid">
-            <div class="metrica-box">
-              <div class="metrica-val val-tensao" id="v-recepcao">—</div>
-              <div class="metrica-un">V</div>
-              <div class="metrica-label">Tensão</div>
-            </div>
-            <div class="metrica-box">
-              <div class="metrica-val val-corrente" id="i-recepcao">—</div>
-              <div class="metrica-un">A</div>
-              <div class="metrica-label">Corrente</div>
-            </div>
-            <div class="metrica-box">
-              <div class="metrica-val val-potencia" id="p-recepcao">—</div>
-              <div class="metrica-un">W</div>
-              <div class="metrica-label">Potência</div>
-            </div>
-            <div class="metrica-box">
-              <div class="metrica-val val-kwh" id="kwh-recepcao">—</div>
-              <div class="metrica-un">kWh</div>
-              <div class="metrica-label">Energia</div>
-            </div>
-            <div class="metrica-box">
-              <div class="metrica-val val-fp" id="fp-recepcao">—</div>
-              <div class="metrica-un">FP</div>
-              <div class="metrica-label">Fat. Pot.</div>
-            </div>
-            <div class="metrica-box">
-              <div class="metrica-val val-freq" id="hz-recepcao">—</div>
-              <div class="metrica-un">Hz</div>
-              <div class="metrica-label">Freq.</div>
-            </div>
-          </div>
-          <a href="/circuito/recepcao" class="btn btn-sm btn-purple w-100 mt-3">
-            <i class="bi bi-graph-up me-1"></i>Ver histórico e gráficos
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- GRÁFICO POTÊNCIA + ÚLTIMAS ANOMALIAS -->
-  <div class="row g-3">
-    <div class="col-12 col-lg-8">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <span><i class="bi bi-graph-up me-2" style="color:var(--roxo)"></i>Potência em tempo real — 24h</span>
-          <div class="d-flex gap-2">
-            <span class="chip-circuito chip-sala"><i class="bi bi-square-fill"></i>Sala</span>
-            <span class="chip-circuito chip-robot"><i class="bi bi-square-fill"></i>Robótica</span>
-            <span class="chip-circuito chip-recep"><i class="bi bi-square-fill"></i>Recepção</span>
-          </div>
-        </div>
-        <div class="card-body">
-          <canvas id="grafico-potencia" height="200"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-12 col-lg-4">
-      <div class="card h-100">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <span><i class="bi bi-exclamation-triangle me-2" style="color:var(--vermelho)"></i>Últimas anomalias</span>
-          <a href="/ml-dashboard" class="btn btn-sm btn-purple px-3">Ver ML</a>
-        </div>
-        <div class="card-body p-0">
-          <div id="lista-anomalias" style="max-height:260px;overflow-y:auto">
-            <div class="text-center py-4 text-muted-em">
-              <i class="bi bi-check-circle" style="font-size:1.5rem;color:var(--verde)"></i>
-              <div class="mt-2">Sem anomalias recentes</div>
-            </div>
-          </div>
-        </div>
+    <div class="panel-body" id="lista-anom" style="max-height:280px;overflow-y:auto">
+      <div class="anom-empty">
+        <span class="check-icon">✓</span>
+        Sem anomalias recentes
       </div>
     </div>
   </div>
@@ -263,89 +161,76 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-// ── Cores Ensina Mais ──
-const COR = {
-  sala:   { border:'#1A73E8', bg:'rgba(26,115,232,.08)' },
-  robot:  { border:'#2EC866', bg:'rgba(46,200,102,.08)' },
-  recep:  { border:'#FF6B35', bg:'rgba(255,107,53,.08)' },
-};
-
-const ctx = document.getElementById('grafico-potencia').getContext('2d');
-const chart = new Chart(ctx, {
+const chart = new Chart(document.getElementById('chart-pot'), {
   type: 'line',
   data: {
     labels: [],
     datasets: [
-      { label:'Sala de Aula', data:[], borderColor:COR.sala.border, backgroundColor:COR.sala.bg, borderWidth:2, tension:.4, fill:true, pointRadius:0 },
-      { label:'Robótica',     data:[], borderColor:COR.robot.border,backgroundColor:COR.robot.bg,borderWidth:2, tension:.4, fill:true, pointRadius:0 },
-      { label:'Recepção',     data:[], borderColor:COR.recep.border,backgroundColor:COR.recep.bg,borderWidth:2, tension:.4, fill:true, pointRadius:0 },
+      { label:'Sala', data:[], borderColor:'#3B82F6', backgroundColor:'rgba(59,130,246,.08)', borderWidth:2, tension:.4, fill:true, pointRadius:0 },
+      { label:'Robótica', data:[], borderColor:'#22C55E', backgroundColor:'rgba(34,197,94,.08)', borderWidth:2, tension:.4, fill:true, pointRadius:0 },
+      { label:'Recepção', data:[], borderColor:'#F59E0B', backgroundColor:'rgba(245,158,11,.08)', borderWidth:2, tension:.4, fill:true, pointRadius:0 },
     ]
   },
   options: {
-    responsive:true, maintainAspectRatio:true,
-    animation:{ duration:400 },
-    plugins:{ legend:{ display:false }, tooltip:{ mode:'index', intersect:false, callbacks:{
-      label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(1)} W`
-    }}},
+    responsive:true, maintainAspectRatio:true, animation:{ duration:300 },
+    plugins:{ legend:{ display:false }, tooltip:{ mode:'index', intersect:false }},
     scales:{
-      x:{ grid:{ color:'rgba(0,0,0,.05)' }, ticks:{ font:{size:11}, maxTicksLimit:8, color:'#6B6B8A' }},
-      y:{ grid:{ color:'rgba(0,0,0,.05)' }, ticks:{ font:{size:11}, color:'#6B6B8A', callback: v => v+'W' }, beginAtZero:true }
+      x:{ grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:10}, maxTicksLimit:8, color:'#9CA3AF' }},
+      y:{ grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:10}, color:'#9CA3AF', callback:v=>v+'W' }, beginAtZero:true }
     }
   }
 });
+
+const circs = ['sala_aula','robotica','recepcao'];
 
 async function atualizar() {
   try {
     const r = await fetch('/api/resumo');
     const d = await r.json();
-    let ptotal=0, kwhtotal=0;
+    let pt=0, kwht=0;
 
-    ['sala_aula','robotica','recepcao'].forEach(c => {
-      const info = d[c];
-      if (!info) return;
-      const pref = c === 'sala_aula' ? 'sala_aula' : c;
-      ['v','i','p','kwh','fp','hz'].forEach(k => {
-        const el = document.getElementById(k+'-'+pref);
-        if (el) el.textContent = info[k]?.toFixed(k==='hz'?1:2) ?? '—';
-      });
-      ptotal += info.p || 0;
-      kwhtotal += info.kwh || 0;
+    circs.forEach(c => {
+      const info = d[c]; if (!info) return;
+      document.getElementById('v-'+c).textContent   = info.tensao?.toFixed(1) ?? '—';
+      document.getElementById('i-'+c).textContent   = info.corrente?.toFixed(2) ?? '—';
+      document.getElementById('p-'+c).textContent   = info.potencia?.toFixed(0) ?? '—';
+      document.getElementById('kwh-'+c).textContent = info.energia_kwh?.toFixed(2) ?? '—';
+      document.getElementById('fp-'+c).textContent  = info.fator_potencia?.toFixed(2) ?? '—';
+      document.getElementById('hz-'+c).textContent  = info.frequencia?.toFixed(1) ?? '—';
+      pt += info.potencia || 0;
+      kwht += info.energia_kwh || 0;
     });
 
-    document.getElementById('kpi-potencia-total').textContent = ptotal.toFixed(0)+' W';
-    document.getElementById('kpi-kwh-total').textContent = kwhtotal.toFixed(2)+' kWh';
-    const custo = kwhtotal * 0.80;
-    document.getElementById('kpi-custo').textContent = 'R$ '+custo.toFixed(2);
+    document.getElementById('kpi-pot').textContent  = pt.toFixed(0)+' W';
+    document.getElementById('kpi-kwh').textContent  = kwht.toFixed(2)+' kWh';
+    document.getElementById('kpi-custo').textContent= 'R$ '+(kwht*0.80).toFixed(2);
 
-    // Gráfico
-    const hist = await fetch('/api/historico/sala_aula?horas=24').then(r=>r.json());
-    const h2   = await fetch('/api/historico/robotica?horas=24').then(r=>r.json());
-    const h3   = await fetch('/api/historico/recepcao?horas=24').then(r=>r.json());
-    const labels = hist.map(x => x.hora || x.timestamp?.substring(11,16));
+    // Histórico gráfico
+    const [h1,h2,h3] = await Promise.all(
+      circs.map(c => fetch('/api/historico/'+c+'?horas=24').then(r=>r.json()).catch(()=>[]))
+    );
+    const labels = h1.map(x=>(x.hora||x.timestamp||'').toString().substring(11,16));
     chart.data.labels = labels;
-    chart.data.datasets[0].data = hist.map(x=>x.potencia);
+    chart.data.datasets[0].data = h1.map(x=>x.potencia);
     chart.data.datasets[1].data = h2.map(x=>x.potencia);
     chart.data.datasets[2].data = h3.map(x=>x.potencia);
     chart.update('none');
 
     // Anomalias
-    const anom = await fetch('/api/anomalias?limit=6').then(r=>r.json()).catch(()=>[]);
-    const lista = document.getElementById('lista-anomalias');
-    if (anom.length) {
-      document.getElementById('kpi-anomalias').textContent = anom.length;
-      lista.innerHTML = anom.map(a => `
-        <div class="d-flex align-items-start gap-2 px-3 py-2" style="border-bottom:1px solid var(--border)">
-          <i class="bi bi-exclamation-triangle-fill mt-1" style="color:var(--vermelho);font-size:.85rem;flex-shrink:0"></i>
+    const anoms = await fetch('/api/anomalias?limit=5').then(r=>r.json()).catch(()=>[]);
+    document.getElementById('kpi-anom').textContent = anoms.length || '0';
+    const lista = document.getElementById('lista-anom');
+    if (anoms.length) {
+      lista.innerHTML = anoms.map(a=>`
+        <div class="anom-item">
+          <i class="bi bi-exclamation-triangle-fill" style="color:#EF4444;font-size:14px;margin-top:2px;flex-shrink:0"></i>
           <div>
-            <div style="font-size:.78rem;font-weight:600;color:var(--text)">${a.circuito?.replace('_',' ')} · ${a.algoritmo}</div>
-            <div style="font-size:.72rem;color:var(--muted)">${a.descricao || 'Anomalia detectada'}</div>
-            <div style="font-size:.7rem;color:var(--muted)">${a.timestamp?.substring(0,16).replace('T',' ') || ''}</div>
+            <div style="font-size:12px;font-weight:600">${(a.circuito||'').replace('_',' ')} · ${a.algoritmo||''}</div>
+            <div style="font-size:11px;color:#6B7280">${a.descricao||'Anomalia detectada'}</div>
+            <div style="font-size:10px;color:#9CA3AF">${(a.timestamp||'').toString().substring(0,16).replace('T',' ')}</div>
           </div>
         </div>`).join('');
-    } else {
-      document.getElementById('kpi-anomalias').textContent = '0';
     }
-
   } catch(e){ console.warn(e); }
 }
 
