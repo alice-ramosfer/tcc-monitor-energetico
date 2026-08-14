@@ -49,28 +49,3 @@ def novo_usuario():
             return redirect(url_for('dashboard.index'))
     return render_template('novo_usuario.html')
 
-
-@auth_bp.route('/reset-admin-temp')
-def reset_admin_temp():
-    from models import Usuario
-    from extensions import db
-    import bcrypt
-    try:
-        senha_hash = bcrypt.hashpw('admin123'.encode(), bcrypt.gensalt()).decode()
-        u = Usuario.query.filter_by(email='admin@escola.com').first()
-        if u:
-            u.senha_hash = senha_hash
-            db.session.commit()
-            return 'Senha resetada! Login: admin@escola.com / admin123'
-        novo = Usuario(
-            nome='Administrador',
-            email='admin@escola.com',
-            senha_hash=senha_hash,
-            perfil='admin'
-        )
-        db.session.add(novo)
-        db.session.commit()
-        return 'Admin criado! Login: admin@escola.com / admin123'
-    except Exception as e:
-        db.session.rollback()
-        return f'Erro: {e}'

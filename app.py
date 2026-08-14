@@ -12,7 +12,11 @@ from routes.auth      import auth_bp
 from routes.dashboard import dash_bp
 from routes.api       import api_bp
 from routes.ml_routes import ml_bp
+from models import Usuario
+from extensions import db
+import bcrypt
 import os
+
 
 def create_app():
     app = Flask(__name__)
@@ -63,19 +67,23 @@ def create_app():
 
 
 def _criar_admin_padrao():
-    """Cria admin padrão apenas se o banco estiver vazio."""
-    from models import Usuario
-    import bcrypt
     try:
         if not Usuario.query.filter_by(email='admin@escola.com').first():
-            admin = Usuario(nome='Administrador', email='admin@escola.com', perfil='admin')
-            admin.set_senha('admin123')
+            senha_hash = bcrypt.hashpw('admin123'.encode(), bcrypt.gensalt()).decode()
+            admin = Usuario(
+                nome='Administrador',
+                email='admin@escola.com',
+                senha_hash=senha_hash,
+                perfil='admin'
+            )
             db.session.add(admin)
             db.session.commit()
-            print('✓ Admin criado: admin@escola.com / admin123')
+            print('✓ Admin criado')
+        else:
+            print('✓ Admin já existe — nada a fazer')
     except Exception as e:
         db.session.rollback()
-        print(f'⚠ Erro ao criar admin: {e}')
+        print(f'⚠ Erro: {e}')
 
 
 # ── EXECUÇÃO LOCAL ────────────────────────────────────────────
