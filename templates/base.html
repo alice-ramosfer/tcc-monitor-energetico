@@ -53,7 +53,7 @@
       <span class="user-name">
         <i class="bi bi-person-circle"></i> {{ current_user.nome }}
       </span>
-      <button class="user-btn dropdown-toggle" data-bs-toggle="dropdown">admin ▾</button>
+      <button class="user-btn dropdown-toggle" data-bs-toggle="dropdown">admin</button>
       <ul class="dropdown-menu dropdown-menu-end">
         {% if current_user.perfil == 'admin' %}
         <li><a class="dropdown-item" href="/usuarios/novo"><i class="bi bi-person-plus me-2"></i>Novo usuário</a></li>
