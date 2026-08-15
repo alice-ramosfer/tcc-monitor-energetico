@@ -43,6 +43,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
+  overflow: visible !important;
 }
 
 .nav-yellow-bar {
@@ -58,6 +59,7 @@ body {
   height: 56px;
   flex-wrap: nowrap;
   overflow-x: auto;
+  overflow: visible !important;
 }
 
 .nav-brand {
