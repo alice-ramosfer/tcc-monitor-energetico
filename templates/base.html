@@ -13,13 +13,14 @@
 <body>
 
 <!-- NAVBAR -->
-<nav class="navbar-main" style="z-index: 1000; position: relative;">
+<nav class="navbar-main">
   <div class="nav-inner">
     <!-- Logo -->
     <a class="nav-brand" href="/">
-      <img src="/static/img/logo_ensina.png" 
-        alt="Ensina Mais" 
-        style="height:40px;width:auto">
+      <div class="brand-logo">
+        <div class="logo-em">ensina<br>mais</div>
+        <div class="logo-monica"></div>
+      </div>
       <span class="brand-title">Monitor Energético</span>
     </a>
 
@@ -53,7 +54,7 @@
       <span class="user-name">
         <i class="bi bi-person-circle"></i> {{ current_user.nome }}
       </span>
-      <button class="user-btn dropdown-toggle" data-bs-toggle="dropdown">admin</button>
+      <button class="user-btn dropdown-toggle" data-bs-toggle="dropdown">admin ▾</button>
       <ul class="dropdown-menu dropdown-menu-end">
         {% if current_user.perfil == 'admin' %}
         <li><a class="dropdown-item" href="/usuarios/novo"><i class="bi bi-person-plus me-2"></i>Novo usuário</a></li>
@@ -63,10 +64,50 @@
       </ul>
     </div>
     {% endif %}
+
+    <!-- Botão hambúrguer (só mobile) -->
+    <button class="nav-hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <i class="bi bi-list" id="hamburger-icon"></i>
+    </button>
   </div>
+
+  <!-- Menu mobile -->
+  <div class="nav-mobile-menu" id="nav-mobile-menu">
+    <a class="nav-lnk {% if request.path == '/' %}on{% endif %}" href="/">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a class="nav-lnk {% if 'sala_aula' in request.path %}on{% endif %}" href="/circuito/sala_aula">
+      <i class="bi bi-book"></i> Sala de Aula
+    </a>
+    <a class="nav-lnk {% if 'robotica' in request.path %}on{% endif %}" href="/circuito/robotica">
+      <i class="bi bi-tools"></i> Robótica
+    </a>
+    <a class="nav-lnk {% if 'recepcao' in request.path %}on{% endif %}" href="/circuito/recepcao">
+      <i class="bi bi-person-lines-fill"></i> Recepção
+    </a>
+    <a class="nav-lnk {% if 'ml' in request.path %}on{% endif %}" href="/ml-dashboard">
+      <i class="bi bi-cpu"></i> ML / Anomalias
+    </a>
+    {% if current_user.is_authenticated %}
+    <hr style="border-color:var(--border);margin:6px 0">
+    <a class="nav-lnk" href="/logout" style="color:#dc2626">
+      <i class="bi bi-box-arrow-right"></i> Sair
+    </a>
+    {% endif %}
+  </div>
+
   <!-- Faixa amarela -->
   <div class="nav-yellow-bar"></div>
 </nav>
+
+<script>
+function toggleMenu() {
+  const menu = document.getElementById('nav-mobile-menu');
+  const icon = document.getElementById('hamburger-icon');
+  const open = menu.classList.toggle('open');
+  icon.className = open ? 'bi bi-x-lg' : 'bi bi-list';
+}
+</script>
 
 <!-- FLASH -->
 <div class="container-fluid px-4 mt-2">
