@@ -62,7 +62,7 @@ body {
   padding: 0 24px;
   height: 56px;
   flex-wrap: nowrap;
-  overflow-x: visible;
+  overflow: visible;
 }
 
 .nav-brand {

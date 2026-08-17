@@ -57,7 +57,7 @@
     {% if current_user.is_authenticated %}
     <div class="nav-user dropdown" style="position:relative;z-index:1050">
       <button class="user-btn dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true">
-        <i class="bi bi-person-circle me-1"></i>{{ current_user.nome }} ▾
+        <i class="bi bi-person-circle me-1"></i>{{ current_user.nome }}
       </button>
       <ul class="dropdown-menu dropdown-menu-end" style="z-index:9999;position:absolute">
         {% if current_user.perfil == 'admin' %}
