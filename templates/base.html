@@ -16,12 +16,18 @@
 <nav class="navbar-main">
   <div class="nav-inner">
     <!-- Logo -->
+  <a class="nav-brand" href="/">
+    <img src="/static/img/logo_ensina.png"
+        alt="Ensina Mais"
+        style="height:36px;width:auto;flex-shrink:0"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="brand-logo" style="display:none">
+      <div class="logo-em">ensina<br>mais</div>
+    </div>
+    <span class="brand-title">Monitor Energético</span>
+  </a>
     <a class="nav-brand" href="/">
-      <img src="/static/img/logo_ensina.png" 
-        alt="Ensina Mais" 
-        style="height:40px;width:auto">
-      <span class="brand-title">Monitor Energético</span>
-    </a>
+
 
     <!-- Tag escola -->
     <span class="escola-tag">
@@ -49,12 +55,11 @@
 
     <!-- User -->
     {% if current_user.is_authenticated %}
-    <div class="nav-user dropdown">
-      <span class="user-name">
-        <i class="bi bi-person-circle"></i> {{ current_user.nome }}
-      </span>
-      <button class="user-btn dropdown-toggle" data-bs-toggle="dropdown">admin ▾</button>
-      <ul class="dropdown-menu dropdown-menu-end">
+    <div class="nav-user dropdown" style="position:relative;z-index:1050">
+      <button class="user-btn dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true">
+        <i class="bi bi-person-circle me-1"></i>{{ current_user.nome }} ▾
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end" style="z-index:9999;position:absolute">
         {% if current_user.perfil == 'admin' %}
         <li><a class="dropdown-item" href="/usuarios/novo"><i class="bi bi-person-plus me-2"></i>Novo usuário</a></li>
         <li><hr class="dropdown-divider"></li>
