@@ -13,7 +13,7 @@ def index():
     cards = []
     for c in CIRCUITOS:
         ultima = Leitura.query.filter_by(circuito=c).order_by(Leitura.timestamp.desc()).first()
-        desde  = datetime.utcnow() - timedelta(hours=24)
+        desde  = datetime.now() - timedelta(hours=24)
         n_anom = AnomaliaML.query.filter_by(circuito=c, eh_anomalia=True)\
                                  .filter(AnomaliaML.timestamp >= desde).count()
         cards.append({'circuito': c, 'nome': NOMES[c], 'ultima': ultima, 'anomalias24': n_anom})
@@ -27,7 +27,7 @@ def index():
 def circuito(nome):
     if nome not in CIRCUITOS:
         return 'Circuito não encontrado', 404
-    desde   = datetime.utcnow() - timedelta(hours=24)
+    desde   = datetime.now() - timedelta(hours=24)
     leituras = Leitura.query.filter(Leitura.circuito==nome, Leitura.timestamp>=desde)\
                             .order_by(Leitura.timestamp.asc()).all()
     anomalias = AnomaliaML.query.filter_by(circuito=nome, eh_anomalia=True)\

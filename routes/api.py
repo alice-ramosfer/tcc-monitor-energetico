@@ -124,7 +124,7 @@ def simular():
     from datetime import timedelta
 
     n = int(request.args.get('n', 200))  # ?n=200
-    base = datetime.utcnow() - timedelta(hours=n//6)
+    base = datetime.now() - timedelta(hours=n//6)
 
     for i in range(n):
         for circuito in CIRCUITOS:
