@@ -35,7 +35,7 @@ def create_app():
     db_url = os.environ.get('DATABASE_URL', 'sqlite:///tcc_energia.db')
 
     # Railway às vezes entrega "mysql://" — corrige para "mysql+pymysql://"
-    if db_url.startswith('mysql://'):
+    if db_url.startswith('postgres://'):
         db_url = db_url.replace('postgres://', 'postgresql://')
 
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url

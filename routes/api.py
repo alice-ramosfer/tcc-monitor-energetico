@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 BRASILIA = ZoneInfo('America/Sao_Paulo')
 api_bp = Blueprint('api', __name__)
+
 CIRCUITOS = ('sala_aula', 'robotica', 'recepcao')
 API_KEY   = 'tcc-esp32-2026'  # Mude em produção
 
@@ -27,7 +28,7 @@ def receber_dados():
             energia_kwh    = float(d.get('energia_kwh', 0)),
             fator_potencia = float(d.get('fator_potencia', 0)),
             frequencia     = float(d.get('frequencia', 0)),
-            timestamp      = datetime.now(BRASILIA).replace(tzinfo=None),
+            timestamp      = datetime.now(ZoneInfo('America/Sao_Paulo')).replace(tzinfo=None),
         )
     except (TypeError, ValueError) as e:
         return jsonify({'erro': str(e)}), 400
@@ -61,7 +62,7 @@ def historico(circuito):
 def resumo():
     res = {}
     for c in CIRCUITOS:
-        l = Leitura.query.filter_by(circuito=c).order_by(Leitura.timestamp.desc()).first()
+        l = Leitura.query.filter_by(circuito=c).order_by(Leitura.id.desc()).first()
         res[c] = l.to_dict() if l else None
     return jsonify(res)
 

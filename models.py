@@ -1,6 +1,8 @@
 from extensions import db, login_manager
 from flask_login import UserMixin
 from datetime import datetime
+from zoneinfo import ZoneInfo
+BRASILIA = ZoneInfo('America/Sao_Paulo')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -25,7 +27,7 @@ class Leitura(db.Model):
     energia_kwh    = db.Column(db.Float)
     fator_potencia = db.Column(db.Float)
     frequencia     = db.Column(db.Float)
-    timestamp      = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.utcnow(), index=True)
     anomalias      = db.relationship('AnomaliaML', backref='leitura', lazy=True)
 
     def to_dict(self):
