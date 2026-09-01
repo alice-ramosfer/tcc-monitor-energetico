@@ -33,7 +33,7 @@ def circuito(nome):
     anomalias = AnomaliaML.query.filter_by(circuito=nome, eh_anomalia=True)\
                                 .order_by(AnomaliaML.timestamp.desc()).limit(10).all()
     return render_template('circuito.html', circuito=nome, nome=NOMES[nome],
-                           leituras=leituras, anomalias=anomalias)
+                           leituras=leituras, anomalias=anomalias, hoje=datetime.now().strftime('%Y-%m-%d'))
 
 @dash_bp.route('/ml-dashboard')
 @login_required

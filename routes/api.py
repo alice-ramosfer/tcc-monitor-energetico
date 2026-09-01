@@ -2,7 +2,8 @@ from flask import Blueprint, request, jsonify
 from extensions import db
 from models import Leitura, AnomaliaML
 from datetime import datetime, timedelta
-
+from zoneinfo import ZoneInfo
+BRASILIA = ZoneInfo('America/Sao_Paulo')
 api_bp = Blueprint('api', __name__)
 CIRCUITOS = ('sala_aula', 'robotica', 'recepcao')
 API_KEY   = 'tcc-esp32-2026'  # Mude em produção
@@ -26,6 +27,7 @@ def receber_dados():
             energia_kwh    = float(d.get('energia_kwh', 0)),
             fator_potencia = float(d.get('fator_potencia', 0)),
             frequencia     = float(d.get('frequencia', 0)),
+            timestamp      = datetime.now(BRASILIA).replace(tzinfo=None),
         )
     except (TypeError, ValueError) as e:
         return jsonify({'erro': str(e)}), 400
@@ -48,7 +50,7 @@ def historico(circuito):
     if circuito not in CIRCUITOS:
         return jsonify({'erro': 'circuito inválido'}), 400
     horas = int(request.args.get('horas', 24))
-    desde = datetime.utcnow() - timedelta(hours=horas)
+    desde = datetime.now(BRASILIA).replace(tzinfo=None) - timedelta(hours=horas)
     ls = (Leitura.query
           .filter(Leitura.circuito == circuito, Leitura.timestamp >= desde)
           .order_by(Leitura.timestamp.asc()).all())
@@ -72,6 +74,46 @@ def anomalias():
     if circuito:
         q = q.filter_by(circuito=circuito)
     return jsonify([a.to_dict() for a in q.order_by(AnomaliaML.timestamp.desc()).limit(limite)])
+
+
+# ── GET /api/consumo-data?circuito=sala_aula&data=2026-08-30 ───
+@api_bp.route('/consumo-data')
+def consumo_por_data():
+    circuito = request.args.get('circuito')
+    data_str = request.args.get('data')
+    if not circuito or circuito not in CIRCUITOS:
+        return jsonify({'erro': 'circuito inválido'}), 400
+    if not data_str:
+        return jsonify({'erro': 'data obrigatória'}), 400
+    try:
+        data = datetime.strptime(data_str, '%Y-%m-%d')
+    except ValueError:
+        return jsonify({'erro': 'formato inválido, use YYYY-MM-DD'}), 400
+
+    inicio = data.replace(hour=0,  minute=0,  second=0)
+    fim    = data.replace(hour=23, minute=59, second=59)
+
+    ls = (Leitura.query
+          .filter(Leitura.circuito == circuito,
+                  Leitura.timestamp >= inicio,
+                  Leitura.timestamp <= fim)
+          .order_by(Leitura.timestamp.asc()).all())
+
+    if not ls:
+        return jsonify({'status': 'sem dados', 'leituras': []})
+
+    potencias = [l.potencia for l in ls]
+    return jsonify({
+        'circuito':    circuito,
+        'data':        data_str,
+        'total_kwh':   round(sum(l.energia_kwh for l in ls), 4),
+        'potencia_max': round(max(potencias), 1),
+        'potencia_min': round(min(potencias), 1),
+        'potencia_med': round(sum(potencias)/len(potencias), 1),
+        'total_leituras': len(ls),
+        'leituras':    [l.to_dict() for l in ls],
+    })
+
 
 # ── POST /api/simular — Gera dados de teste (só para TCC) ──────
 @api_bp.route('/simular', methods=['POST'])

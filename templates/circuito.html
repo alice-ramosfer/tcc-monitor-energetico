@@ -2,113 +2,192 @@
 {% block title %}{{ nome }} — Monitor Energético{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-3">
   <div>
     <a href="/" class="btn btn-outline-secondary btn-sm me-2">
       <i class="bi bi-arrow-left me-1"></i>Voltar
     </a>
     <span class="fw-bold fs-5">{{ nome }}</span>
-    <small class="text-muted ms-2">últimas 24 horas</small>
   </div>
   <span class="live-dot"></span>
 </div>
 
-{% if leituras %}
-<!-- Última leitura em destaque -->
-{% set ul = leituras[-1] %}
-<div class="row g-3 mb-4">
-  {% for label, val, un, cor in [
-    ('Tensão',         ul.tensao,         'V',   'success'),
-    ('Corrente',       ul.corrente,       'A',   'info'),
-    ('Potência Ativa', ul.potencia,       'W',   'warning'),
-    ('Fator Potência', ul.fator_potencia, '',    'purple'),
-    ('Frequência',     ul.frequencia,     'Hz',  'secondary'),
-    ('Energia Acum.',  ul.energia_kwh,    'kWh', 'danger'),
-  ] %}
-  <div class="col-6 col-md-2">
-    <div class="metrica-box text-center">
-      <div class="metrica-val text-{{ cor }}">
-        {% if val is not none %}{{ '%.2f'|format(val) }}{% else %}—{% endif %}
-      </div>
-      <div class="metrica-un">{{ un }}</div>
-      <div class="metrica-label">{{ label }}</div>
-    </div>
-  </div>
-  {% endfor %}
-</div>
+<!-- Abas -->
+<ul class="nav nav-tabs mb-4" id="abas">
+  <li class="nav-item">
+    <button class="nav-link active" onclick="mostrarAba('tempo-real', this)">
+      <i class="bi bi-activity me-1"></i>Tempo Real — 24h
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" onclick="mostrarAba('busca-data', this)">
+      <i class="bi bi-calendar3 me-1"></i>Buscar por Data
+    </button>
+  </li>
+</ul>
 
-<!-- Gráfico de Potência -->
-<div class="card mb-3">
-  <div class="card-header">
-    <i class="bi bi-graph-up me-2 text-warning"></i>Potência Ativa (W) — últimas 24h
-  </div>
-  <div class="card-body">
-    <canvas id="graficoPotencia" height="100"></canvas>
-  </div>
-</div>
 
-<!-- Gráficos Tensão e Corrente -->
-<div class="row g-3 mb-3">
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header">
-        <i class="bi bi-activity me-2 text-success"></i>Tensão (V)
-      </div>
-      <div class="card-body">
-        <canvas id="graficoTensao" height="120"></canvas>
+<div id="aba-tempo-real">
+  {% if leituras %}
+  <!-- Última leitura em destaque -->
+  {% set ul = leituras[-1] %}
+  <div class="row g-3 mb-4">
+    {% for label, val, un, cor in [
+      ('Tensão',         ul.tensao,         'V',   'success'),
+      ('Corrente',       ul.corrente,       'A',   'info'),
+      ('Potência Ativa', ul.potencia,       'W',   'warning'),
+      ('Fator Potência', ul.fator_potencia, '',    'purple'),
+      ('Frequência',     ul.frequencia,     'Hz',  'secondary'),
+      ('Energia Acum.',  ul.energia_kwh,    'kWh', 'danger'),
+    ] %}
+    <div class="col-6 col-md-2">
+      <div class="metrica-box text-center">
+        <div class="metrica-val text-{{ cor }}">
+          {% if val is not none %}{{ '%.2f'|format(val) }}{% else %}—{% endif %}
+        </div>
+        <div class="metrica-un">{{ un }}</div>
+        <div class="metrica-label">{{ label }}</div>
       </div>
     </div>
+    {% endfor %}
   </div>
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header">
-        <i class="bi bi-activity me-2 text-info"></i>Corrente (A)
+
+  <!-- Gráfico de Potência -->
+  <div class="card mb-3">
+    <div class="card-header">
+      <i class="bi bi-graph-up me-2 text-warning"></i>Potência Ativa (W) — últimas 24h
+    </div>
+    <div class="card-body">
+      <canvas id="graficoPotencia" height="100"></canvas>
+    </div>
+  </div>
+
+  <!-- Gráficos Tensão e Corrente -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <i class="bi bi-activity me-2 text-success"></i>Tensão (V)
+        </div>
+        <div class="card-body">
+          <canvas id="graficoTensao" height="120"></canvas>
+        </div>
       </div>
-      <div class="card-body">
-        <canvas id="graficoCorrente" height="120"></canvas>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <i class="bi bi-activity me-2 text-info"></i>Corrente (A)
+        </div>
+        <div class="card-body">
+          <canvas id="graficoCorrente" height="120"></canvas>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-{% else %}
-<div class="card">
-  <div class="card-body text-center py-5">
-    <i class="bi bi-wifi-off text-muted" style="font-size:3rem"></i>
-    <p class="text-muted mt-3">Sem dados para este circuito ainda.<br>
-    <small>Aguardando o ESP32 enviar leituras...</small></p>
+  {% else %}
+  <div class="card">
+    <div class="card-body text-center py-5">
+      <i class="bi bi-wifi-off text-muted" style="font-size:3rem"></i>
+      <p class="text-muted mt-3">Sem dados para este circuito ainda.<br>
+      <small>Aguardando o ESP32 enviar leituras...</small></p>
+    </div>
   </div>
-</div>
-{% endif %}
+  {% endif %}
 
-<!-- Anomalias -->
-{% if anomalias %}
-<div class="card">
-  <div class="card-header">
-    <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
-    Anomalias Detectadas — {{ nome }}
+  <!-- Anomalias -->
+  {% if anomalias %}
+  <div class="card">
+    <div class="card-header">
+      <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+      Anomalias Detectadas — {{ nome }}
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-dark table-hover mb-0 small">
+          <thead><tr><th>Algoritmo</th><th>Score</th><th>Descrição</th><th>Quando</th></tr></thead>
+          <tbody>
+            {% for a in anomalias %}
+            <tr>
+              <td><code class="text-warning">{{ a.algoritmo }}</code></td>
+              <td><span class="text-danger">{{ '%.4f'|format(a.score) }}</span></td>
+              <td class="text-muted">{{ a.descricao or '—' }}</td>
+              <td><small>{{ a.timestamp.strftime('%d/%m %H:%M') }}</small></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
-  <div class="card-body p-0">
-    <div class="table-responsive">
-      <table class="table table-dark table-hover mb-0 small">
-        <thead><tr><th>Algoritmo</th><th>Score</th><th>Descrição</th><th>Quando</th></tr></thead>
-        <tbody>
-          {% for a in anomalias %}
-          <tr>
-            <td><code class="text-warning">{{ a.algoritmo }}</code></td>
-            <td><span class="text-danger">{{ '%.4f'|format(a.score) }}</span></td>
-            <td class="text-muted">{{ a.descricao or '—' }}</td>
-            <td><small>{{ a.timestamp.strftime('%d/%m %H:%M') }}</small></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+  {% endif %}
+  <!-- ABA BUSCA POR DATA -->
+<div id="aba-busca-data" style="display:none">
+  <div class="card mb-4">
+    <div class="card-header">
+      <i class="bi bi-calendar3 me-2" style="color:var(--navy)"></i>
+      Consumo por Data — {{ nome }}
+    </div>
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-12 col-md-4">
+          <label class="form-label">Selecione a data</label>
+          <input type="date" id="input-data" class="form-control"
+                 value="{{ hoje }}"
+                 max="{{ hoje }}">
+        </div>
+        <div class="col-12 col-md-3">
+          <button class="btn-navy w-100 py-2" onclick="buscarData()">
+            <i class="bi bi-search me-1"></i>Buscar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resultado resumo -->
+  <div id="resultado-resumo" style="display:none" class="mb-4">
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="kpi-card">
+        <div class="kpi-icon g"><i class="bi bi-database-fill"></i></div>
+        <div><div class="kpi-val" id="res-kwh">—</div><div class="kpi-lbl">Total kWh</div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon y"><i class="bi bi-arrow-up-circle"></i></div>
+        <div><div class="kpi-val" id="res-max">—</div><div class="kpi-lbl">Pico (W)</div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon o"><i class="bi bi-bar-chart"></i></div>
+        <div><div class="kpi-val" id="res-med">—</div><div class="kpi-lbl">Média (W)</div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon s"><i class="bi bi-currency-dollar"></i></div>
+        <div><div class="kpi-val" id="res-custo">—</div><div class="kpi-lbl">Custo (R$)</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráfico da data -->
+  <div class="card mb-4" id="card-grafico-data" style="display:none">
+    <div class="card-header">
+      <i class="bi bi-graph-up me-2" style="color:var(--navy)"></i>
+      Potência ao longo do dia
+    </div>
+    <div class="card-body">
+      <canvas id="grafico-data" height="120"></canvas>
+    </div>
+  </div>
+
+  <div id="sem-dados-data" style="display:none" class="card">
+    <div class="card-body text-center py-5">
+      <i class="bi bi-calendar-x" style="font-size:2rem;color:var(--gray5)"></i>
+      <p class="mt-3" style="color:var(--muted)">Nenhuma leitura encontrada para esta data.</p>
     </div>
   </div>
 </div>
-{% endif %}
-{% endblock %}
-
+  {% endblock %}
+</div>
 {% block scripts %}
 <script>
 // Carrega dados via API (evita problema do to_dict no Jinja)
@@ -117,7 +196,11 @@ fetch('/api/historico/{{ circuito }}?horas=24')
   .then(dados => {
     if (!dados.length) return;
 
-    const labels    = dados.map(d => d.timestamp.slice(11, 16));
+    const labels = dados.map(d => {
+      const ts = d.timestamp;
+      // Ajusta fuso horário se necessário
+      return ts ? ts.slice(11, 16) : '';
+    });
     const potencias = dados.map(d => d.potencia   || 0);
     const tensoes   = dados.map(d => d.tensao      || 0);
     const correntes = dados.map(d => d.corrente    || 0);
@@ -151,5 +234,75 @@ fetch('/api/historico/{{ circuito }}?horas=24')
     new Chart(document.getElementById('graficoCorrente'), opts('Corrente (A)', correntes, '#60a5fa'));
   })
   .catch(e => console.error('Erro ao carregar gráfico:', e));
+  let chartData = null;
+
+function mostrarAba(aba, btn) {
+  document.getElementById('aba-tempo-real').style.display = aba === 'tempo-real' ? 'block' : 'none';
+  document.getElementById('aba-busca-data').style.display = aba === 'busca-data' ? 'block' : 'none';
+  document.querySelectorAll('#abas .nav-link').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+async function buscarData() {
+  const data    = document.getElementById('input-data').value;
+  const circ    = '{{ circuito }}';
+  if (!data) return;
+
+  // Esconde resultados anteriores
+  document.getElementById('resultado-resumo').style.display    = 'none';
+  document.getElementById('card-grafico-data').style.display   = 'none';
+  document.getElementById('sem-dados-data').style.display      = 'none';
+
+  try {
+    const r = await fetch(`/api/consumo-data?circuito=${circ}&data=${data}`);
+    const d = await r.json();
+
+    if (!d.leituras || d.leituras.length === 0) {
+      document.getElementById('sem-dados-data').style.display = 'block';
+      return;
+    }
+
+    // Preenche KPIs
+    document.getElementById('res-kwh').textContent   = d.total_kwh + ' kWh';
+    document.getElementById('res-max').textContent   = d.potencia_max + ' W';
+    document.getElementById('res-med').textContent   = d.potencia_med + ' W';
+    document.getElementById('res-custo').textContent = 'R$ ' + (d.total_kwh * 0.80).toFixed(2);
+    document.getElementById('resultado-resumo').style.display = 'grid';
+
+    // Gráfico
+    const labels = d.leituras.map(l => l.timestamp.slice(11, 16));
+    const pots   = d.leituras.map(l => l.potencia);
+
+    if (chartData) chartData.destroy();
+    document.getElementById('card-grafico-data').style.display = 'block';
+    chartData = new Chart(document.getElementById('grafico-data'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Potência (W)',
+          data: pots,
+          borderColor: '#1B2A4A',
+          backgroundColor: 'rgba(27,42,74,.08)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: pots.length > 100 ? 0 : 2,
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { maxTicksLimit: 12, color: '#9CA3AF' }, grid: { color: 'rgba(0,0,0,.04)' } },
+          y: { ticks: { color: '#9CA3AF', callback: v => v+'W' }, grid: { color: 'rgba(0,0,0,.04)' }, beginAtZero: true }
+        }
+      }
+    });
+
+  } catch(e) {
+    console.error(e);
+  }
+}
 </script>
 {% endblock %}
