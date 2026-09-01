@@ -41,7 +41,7 @@ def receber_dados():
 def ultima_leitura(circuito):
     if circuito not in CIRCUITOS:
         return jsonify({'erro': 'circuito inválido'}), 400
-    l = Leitura.query.filter_by(circuito=circuito).order_by(Leitura.timestamp.desc()).first()
+    l = Leitura.query.filter_by(circuito=circuito).order_by(Leitura.id.desc()).first()
     return jsonify(l.to_dict()) if l else jsonify({'erro': 'sem dados'}), 404
 
 # ── GET /api/historico/<circuito>?horas=24 ─────────────────────
