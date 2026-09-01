@@ -104,10 +104,13 @@ def consumo_por_data():
         return jsonify({'status': 'sem dados', 'leituras': []})
 
     potencias = [l.potencia for l in ls]
+    kwh_inicio = ls[0].energia_kwh  or 0
+    kwh_fim    = ls[-1].energia_kwh or 0
+    kwh_dia    = round(max(0, kwh_fim - kwh_inicio), 4)
     return jsonify({
         'circuito':    circuito,
         'data':        data_str,
-        'total_kwh':   round(sum(l.energia_kwh for l in ls), 4),
+        'total_kwh':   kwh_dia,
         'potencia_max': round(max(potencias), 1),
         'potencia_min': round(min(potencias), 1),
         'potencia_med': round(sum(potencias)/len(potencias), 1),
