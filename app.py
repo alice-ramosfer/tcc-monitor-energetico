@@ -72,7 +72,7 @@ def _criar_admin_padrao():
             senha_hash = bcrypt.hashpw('admin123'.encode(), bcrypt.gensalt()).decode()
             admin = Usuario(
                 nome='Administrador',
-                email='admin@escola.com',
+                email='alice@residencia.com',
                 senha_hash=senha_hash,
                 perfil='admin'
             )
@@ -94,11 +94,6 @@ if __name__ == '__main__':
     from routes.ml_routes import iniciar_scheduler
     iniciar_scheduler(app)
 
-    print("\n" + "="*50)
-    print("  Monitor Energético — TCC 2026")
-    print("  Local:  http://localhost:5000")
-    print("  Login:  admin@escola.com / admin123")
-    print("="*50 + "\n")
 
     # debug=False em produção, True só local
     debug = os.environ.get('FLASK_ENV') != 'production'

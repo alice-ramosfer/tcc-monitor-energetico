@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 BRASILIA = ZoneInfo('America/Sao_Paulo')
 api_bp = Blueprint('api', __name__)
 
-CIRCUITOS = ('sala_aula', 'robotica', 'recepcao')
+CIRCUITOS = ('quarto_sala', 'cozinha_servico', 'chuveiro')
 API_KEY   = 'tcc-esp32-2026'  # Mude em produção
 
 # ── POST /api/dados — ESP32 envia leitura ──────────────────────

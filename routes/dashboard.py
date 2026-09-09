@@ -4,8 +4,12 @@ from models import Leitura, AnomaliaML
 from datetime import datetime, timedelta
 
 dash_bp = Blueprint('dashboard', __name__)
-CIRCUITOS = ('sala_aula', 'robotica', 'recepcao')
-NOMES = {'sala_aula': 'Sala de Aula', 'robotica': 'Sala de Robótica', 'recepcao': 'Recepção'}
+CIRCUITOS = ('quarto_sala', 'cozinha_servico', 'chuveiro')
+NOMES = {
+    'quarto_sala':     'Quarto e Sala',
+    'cozinha_servico': 'Cozinha e Serviço',
+    'chuveiro':        'Chuveiro'
+}
 
 @dash_bp.route('/')
 @login_required

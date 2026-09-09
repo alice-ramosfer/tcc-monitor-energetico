@@ -1,156 +1,188 @@
 {% extends "base.html" %}
-{% block title %}Dashboard · Monitor Energético{% endblock %}
+{% block title %}Dashboard · Monitor Energético Residencial{% endblock %}
 
 {% block content %}
 
-<!-- HERO -->
-<div class="hero">
-  <h1>Monitor Energético</h1>
-  <div class="hero-right">
-    <span class="live-badge">
-      <span class="live-dot"></span>
-      Ao vivo · atualiza em 10s
-    </span>
-    <a href="/api/simular?n=200" class="btn-simular">
-      <i class="bi bi-play-fill"></i> Simular dados
-    </a>
-  </div>
-</div>
+<!-- SVG ÍCONES inline (reutilizáveis) -->
+<svg style="display:none">
+  <symbol id="ico-lampada" viewBox="0 0 24 24" fill="none">
+    <path d="M9 18h6M10 21h4M12 2a7 7 0 0 1 7 7c0 2.8-1.6 5.2-4 6.4V17a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-1.6C6.6 14.2 5 11.8 5 9a7 7 0 0 1 7-7z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="ico-chama" viewBox="0 0 24 24" fill="none">
+    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="ico-chuveiro" viewBox="0 0 24 24" fill="none">
+    <path d="M4 4a2 2 0 0 1 2-2 3 3 0 0 1 3 3 2 2 0 0 0 2 2h3M4 4v10a2 2 0 0 0 2 2h12M4 4h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="9" y1="20" x2="9" y2="22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="12" y1="20" x2="12" y2="22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="15" y1="20" x2="15" y2="22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="9"  y1="17" x2="9"  y2="18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="12" y1="17" x2="12" y2="18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="15" y1="17" x2="15" y2="18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  </symbol>
+</svg>
 
-<!-- KPI -->
-<div class="kpi-grid">
-  <div class="kpi-card">
-    <div class="kpi-icon y"><i class="bi bi-lightning-charge-fill"></i></div>
-    <div>
-      <div class="kpi-val" id="kpi-pot">0 W</div>
-      <div class="kpi-lbl">Potência total agora</div>
+<div class="page-content">
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>Monitor Energético</h1>
+    <div class="hero-right">
+      <span class="live-badge"><span class="live-dot"></span> Ao vivo · atualiza em 10s</span>
+      <a href="/api/simular?n=200" class="btn-simular">▶ Simular dados</a>
     </div>
   </div>
-  <div class="kpi-card">
-    <div class="kpi-icon g"><i class="bi bi-database-fill"></i></div>
-    <div>
-      <div class="kpi-val" id="kpi-kwh">0.00 kWh</div>
-      <div class="kpi-lbl">Energia acumulada total</div>
-    </div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-icon o"><i class="bi bi-exclamation-triangle-fill"></i></div>
-    <div>
-      <div class="kpi-val" id="kpi-anom">—</div>
-      <div class="kpi-lbl">Anomalias detectadas</div>
-    </div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-icon s"><i class="bi bi-currency-dollar"></i></div>
-    <div>
-      <div class="kpi-val" id="kpi-custo">R$ 0.00</div>
-      <div class="kpi-lbl">Custo estimado (mês)</div>
-    </div>
-  </div>
-</div>
 
-<!-- CIRCUITOS -->
-<div class="sec-hd">
-  <i class="bi bi-grid-3x3-gap-fill"></i>
-  Circuitos monitorados
-  <span class="sec-badge">3 ativos</span>
-</div>
-
-<div class="circ-grid">
-
-  <!-- D1 Sala de Aula -->
-  <div class="circ-card sala">
-    <div class="circ-head">
-      <div class="circ-ico"><i class="bi bi-book-fill"></i></div>
+  <!-- KPI STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon yellow">⚡</div>
       <div>
-        <div class="circ-name">Sala de Aula</div>
-        <div class="circ-sub">Circuito D1 · Disj. C40</div>
+        <div class="stat-val" id="kpi-pot">0 W</div>
+        <div class="stat-lbl">Potência total agora</div>
       </div>
-      <span class="badge-ok" id="st-sala_aula">OK</span>
     </div>
-    <div class="met-grid">
-      <div class="met-box"><div class="met-val" id="v-sala_aula">—</div><div class="met-unit">V</div><div class="met-lbl">Tensão</div></div>
-      <div class="met-box"><div class="met-val" id="i-sala_aula">—</div><div class="met-unit">A</div><div class="met-lbl">Corrente</div></div>
-      <div class="met-box"><div class="met-val" id="p-sala_aula">—</div><div class="met-unit">W</div><div class="met-lbl">Potência</div></div>
-      <div class="met-box"><div class="met-val" id="kwh-sala_aula">—</div><div class="met-unit">kWh</div><div class="met-lbl">Energia</div></div>
-      <div class="met-box"><div class="met-val" id="fp-sala_aula">—</div><div class="met-unit">FP</div><div class="met-lbl">Fat. Pot.</div></div>
-      <div class="met-box"><div class="met-val" id="hz-sala_aula">—</div><div class="met-unit">Hz</div><div class="met-lbl">Freq.</div></div>
-    </div>
-    <a href="/circuito/sala_aula" class="btn-hist"><i class="bi bi-graph-up me-1"></i> Ver histórico e gráficos</a>
-  </div>
-
-  <!-- D2 Robótica -->
-  <div class="circ-card robot">
-    <div class="circ-head">
-      <div class="circ-ico"><i class="bi bi-tools"></i></div>
+    <div class="stat-card">
+      <div class="stat-icon green">🗄</div>
       <div>
-        <div class="circ-name">Sala de Robótica</div>
-        <div class="circ-sub">Circuito D2 · Disj. C32</div>
+        <div class="stat-val" id="kpi-kwh">0.00 kWh</div>
+        <div class="stat-lbl">Energia acumulada total</div>
       </div>
-      <span class="badge-ok" id="st-robotica">OK</span>
     </div>
-    <div class="met-grid">
-      <div class="met-box"><div class="met-val" id="v-robotica">—</div><div class="met-unit">V</div><div class="met-lbl">Tensão</div></div>
-      <div class="met-box"><div class="met-val" id="i-robotica">—</div><div class="met-unit">A</div><div class="met-lbl">Corrente</div></div>
-      <div class="met-box"><div class="met-val" id="p-robotica">—</div><div class="met-unit">W</div><div class="met-lbl">Potência</div></div>
-      <div class="met-box"><div class="met-val" id="kwh-robotica">—</div><div class="met-unit">kWh</div><div class="met-lbl">Energia</div></div>
-      <div class="met-box"><div class="met-val" id="fp-robotica">—</div><div class="met-unit">FP</div><div class="met-lbl">Fat. Pot.</div></div>
-      <div class="met-box"><div class="met-val" id="hz-robotica">—</div><div class="met-unit">Hz</div><div class="met-lbl">Freq.</div></div>
-    </div>
-    <a href="/circuito/robotica" class="btn-hist"><i class="bi bi-graph-up me-1"></i> Ver histórico e gráficos</a>
-  </div>
-
-  <!-- D3 Recepção -->
-  <div class="circ-card recep">
-    <div class="circ-head">
-      <div class="circ-ico"><i class="bi bi-person-lines-fill"></i></div>
+    <div class="stat-card">
+      <div class="stat-icon blue">⚠</div>
       <div>
-        <div class="circ-name">Recepção</div>
-        <div class="circ-sub">Circuito D3 · Disj. C32</div>
-      </div>
-      <span class="badge-ok" id="st-recepcao">OK</span>
-    </div>
-    <div class="met-grid">
-      <div class="met-box"><div class="met-val" id="v-recepcao">—</div><div class="met-unit">V</div><div class="met-lbl">Tensão</div></div>
-      <div class="met-box"><div class="met-val" id="i-recepcao">—</div><div class="met-unit">A</div><div class="met-lbl">Corrente</div></div>
-      <div class="met-box"><div class="met-val" id="p-recepcao">—</div><div class="met-unit">W</div><div class="met-lbl">Potência</div></div>
-      <div class="met-box"><div class="met-val" id="kwh-recepcao">—</div><div class="met-unit">kWh</div><div class="met-lbl">Energia</div></div>
-      <div class="met-box"><div class="met-val" id="fp-recepcao">—</div><div class="met-unit">FP</div><div class="met-lbl">Fat. Pot.</div></div>
-      <div class="met-box"><div class="met-val" id="hz-recepcao">—</div><div class="met-unit">Hz</div><div class="met-lbl">Freq.</div></div>
-    </div>
-    <a href="/circuito/recepcao" class="btn-hist"><i class="bi bi-graph-up me-1"></i> Ver histórico e gráficos</a>
-  </div>
-
-</div>
-
-<!-- GRÁFICO + ANOMALIAS -->
-<div class="bottom-row">
-
-  <div class="panel">
-    <div class="panel-hd">
-      <i class="bi bi-graph-up" style="color:#3B82F6"></i>
-      Potência em tempo real — 24h
-      <div class="chart-legend">
-        <span class="leg-item"><span class="leg-dot" style="background:#3B82F6"></span>Sala</span>
-        <span class="leg-item"><span class="leg-dot" style="background:#22C55E"></span>Robótica</span>
-        <span class="leg-item"><span class="leg-dot" style="background:#F59E0B"></span>Recepção</span>
+        <div class="stat-val" id="kpi-anom">—</div>
+        <div class="stat-lbl">Anomalias detectadas</div>
       </div>
     </div>
-    <div class="panel-body">
-      <canvas id="chart-pot" height="160"></canvas>
+    <div class="stat-card">
+      <div class="stat-icon red">$</div>
+      <div>
+        <div class="stat-val" id="kpi-custo">R$ 0.00</div>
+        <div class="stat-lbl">Custo estimado (mês)</div>
+      </div>
     </div>
   </div>
 
-  <div class="panel">
-    <div class="panel-hd">
-      <i class="bi bi-exclamation-triangle-fill" style="color:#F59E0B"></i>
-      Últimas anomalias
-      <a href="/ml-dashboard" class="btn-ver-ml">Ver ML</a>
+  <!-- TÍTULO CIRCUITOS -->
+  <div class="section-hd">
+    ⊞ Circuitos monitorados
+    <span class="badge-ativos">3 ativos</span>
+  </div>
+
+  <!-- CARDS CIRCUITOS -->
+  <div class="circuits-row">
+
+    <!-- C1 — Quarto e Sala -->
+    <div class="circ-card c1">
+      <div class="circ-head">
+        <div class="circ-head-left">
+          <div class="circ-ico c1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <use href="#ico-lampada"/>
+            </svg>
+          </div>
+          <div>
+            <div class="circ-nome">Quarto e Sala</div>
+            <div class="circ-sub">Iluminação e Tomada · C1</div>
+          </div>
+        </div>
+        <span class="badge-ok" id="st-quarto_sala">OK</span>
+      </div>
+      <div class="met-grid">
+        <div class="met-box"><div class="met-val" id="v-quarto_sala">—</div><div class="met-unit">V</div><div class="met-lbl">Tensão</div></div>
+        <div class="met-box"><div class="met-val" id="i-quarto_sala">—</div><div class="met-unit">A</div><div class="met-lbl">Corrente</div></div>
+        <div class="met-box"><div class="met-val" id="p-quarto_sala">—</div><div class="met-unit">W</div><div class="met-lbl">Potência</div></div>
+        <div class="met-box"><div class="met-val" id="kwh-quarto_sala">—</div><div class="met-unit">kWh</div><div class="met-lbl">Energia</div></div>
+        <div class="met-box"><div class="met-val" id="fp-quarto_sala">—</div><div class="met-unit">FP</div><div class="met-lbl">Fat. Pot.</div></div>
+        <div class="met-box"><div class="met-val" id="hz-quarto_sala">—</div><div class="met-unit">Hz</div><div class="met-lbl">Freq.</div></div>
+      </div>
+      <a href="/circuito/quarto_sala" class="btn-hist">Ver histórico e gráficos</a>
     </div>
-    <div class="panel-body" id="lista-anom" style="max-height:280px;overflow-y:auto">
-      <div class="anom-empty">
-        <span class="check-icon">✓</span>
-        Sem anomalias recentes
+
+    <!-- C2 — Cozinha e Serviço -->
+    <div class="circ-card c2">
+      <div class="circ-head">
+        <div class="circ-head-left">
+          <div class="circ-ico c2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <use href="#ico-chama"/>
+            </svg>
+          </div>
+          <div>
+            <div class="circ-nome">Cozinha e Serviço</div>
+            <div class="circ-sub">Iluminação e Tomada · C2</div>
+          </div>
+        </div>
+        <span class="badge-ok" id="st-cozinha_servico">OK</span>
+      </div>
+      <div class="met-grid">
+        <div class="met-box"><div class="met-val" id="v-cozinha_servico">—</div><div class="met-unit">V</div><div class="met-lbl">Tensão</div></div>
+        <div class="met-box"><div class="met-val" id="i-cozinha_servico">—</div><div class="met-unit">A</div><div class="met-lbl">Corrente</div></div>
+        <div class="met-box"><div class="met-val" id="p-cozinha_servico">—</div><div class="met-unit">W</div><div class="met-lbl">Potência</div></div>
+        <div class="met-box"><div class="met-val" id="kwh-cozinha_servico">—</div><div class="met-unit">kWh</div><div class="met-lbl">Energia</div></div>
+        <div class="met-box"><div class="met-val" id="fp-cozinha_servico">—</div><div class="met-unit">FP</div><div class="met-lbl">Fat. Pot.</div></div>
+        <div class="met-box"><div class="met-val" id="hz-cozinha_servico">—</div><div class="met-unit">Hz</div><div class="met-lbl">Freq.</div></div>
+      </div>
+      <a href="/circuito/cozinha_servico" class="btn-hist">Ver histórico e gráficos</a>
+    </div>
+
+    <!-- C3 — Chuveiro -->
+    <div class="circ-card c3">
+      <div class="circ-head">
+        <div class="circ-head-left">
+          <div class="circ-ico c3">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <use href="#ico-chuveiro"/>
+            </svg>
+          </div>
+          <div>
+            <div class="circ-nome">Chuveiro</div>
+            <div class="circ-sub">Circuito C3 · Chuveiro</div>
+          </div>
+        </div>
+        <span class="badge-ok" id="st-chuveiro">OK</span>
+      </div>
+      <div class="met-grid">
+        <div class="met-box"><div class="met-val" id="v-chuveiro">—</div><div class="met-unit">V</div><div class="met-lbl">Tensão</div></div>
+        <div class="met-box"><div class="met-val" id="i-chuveiro">—</div><div class="met-unit">A</div><div class="met-lbl">Corrente</div></div>
+        <div class="met-box"><div class="met-val" id="p-chuveiro">—</div><div class="met-unit">W</div><div class="met-lbl">Potência</div></div>
+        <div class="met-box"><div class="met-val" id="kwh-chuveiro">—</div><div class="met-unit">kWh</div><div class="met-lbl">Energia</div></div>
+        <div class="met-box"><div class="met-val" id="fp-chuveiro">—</div><div class="met-unit">FP</div><div class="met-lbl">Fat. Pot.</div></div>
+        <div class="met-box"><div class="met-val" id="hz-chuveiro">—</div><div class="met-unit">Hz</div><div class="met-lbl">Freq.</div></div>
+      </div>
+      <a href="/circuito/chuveiro" class="btn-hist">Ver histórico e gráficos</a>
+    </div>
+
+  </div>
+
+  <!-- GRÁFICO + ANOMALIAS -->
+  <div class="bottom-row">
+    <div class="panel">
+      <div class="panel-hd">
+        Potência em tempo real — 24h
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:#2563EB"></span>Quarto e Sala</span>
+          <span class="leg-item"><span class="leg-dot" style="background:#047857"></span>Cozinha e Serviço</span>
+          <span class="leg-item"><span class="leg-dot" style="background:#B45309"></span>Chuveiro</span>
+        </div>
+      </div>
+      <div class="chart-area">
+        <canvas id="chart-pot"></canvas>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-hd">
+        ⚠ Últimas anomalias
+        <a href="/ml-dashboard" class="btn-ver-ml">Ver ML</a>
+      </div>
+      <div id="lista-anom">
+        <div class="anom-empty">
+          <span class="anom-check">✓</span>
+          <span style="font-size:12px;color:var(--muted)">Sem anomalias recentes</span>
+        </div>
       </div>
     </div>
   </div>
@@ -161,62 +193,59 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+const CIRCS = ['quarto_sala', 'cozinha_servico', 'chuveiro'];
+
 const chart = new Chart(document.getElementById('chart-pot'), {
   type: 'line',
   data: {
     labels: [],
     datasets: [
-      { label:'Sala', data:[], borderColor:'#3B82F6', backgroundColor:'rgba(59,130,246,.08)', borderWidth:2, tension:.4, fill:true, pointRadius:0 },
-      { label:'Robótica', data:[], borderColor:'#22C55E', backgroundColor:'rgba(34,197,94,.08)', borderWidth:2, tension:.4, fill:true, pointRadius:0 },
-      { label:'Recepção', data:[], borderColor:'#F59E0B', backgroundColor:'rgba(245,158,11,.08)', borderWidth:2, tension:.4, fill:true, pointRadius:0 },
+      { label:'Quarto e Sala',     data:[], borderColor:'#2563EB', backgroundColor:'rgba(37,99,235,.06)',  borderWidth:2, tension:.4, fill:true, pointRadius:0 },
+      { label:'Cozinha e Serviço', data:[], borderColor:'#047857', backgroundColor:'rgba(4,120,87,.06)',   borderWidth:2, tension:.4, fill:true, pointRadius:0 },
+      { label:'Chuveiro',          data:[], borderColor:'#B45309', backgroundColor:'rgba(180,83,9,.06)',   borderWidth:2, tension:.4, fill:true, pointRadius:0 },
     ]
   },
   options: {
-    responsive:true, maintainAspectRatio:true, animation:{ duration:300 },
-    plugins:{ legend:{ display:false }, tooltip:{ mode:'index', intersect:false }},
+    responsive:true, maintainAspectRatio:false, animation:{ duration:300 },
+    plugins:{ legend:{ display:false } },
     scales:{
-      x:{ grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:10}, maxTicksLimit:8, color:'#9CA3AF' }},
-      y:{ grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:10}, color:'#9CA3AF', callback:v=>v+'W' }, beginAtZero:true }
+      x:{ grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:10,family:'Poppins'}, maxTicksLimit:8, color:'#6E6E78' }},
+      y:{ grid:{ color:'rgba(0,0,0,.04)' }, ticks:{ font:{size:10,family:'Poppins'}, color:'#6E6E78', callback:v=>v+'W' }, beginAtZero:true }
     }
   }
 });
 
-const circs = ['sala_aula','robotica','recepcao'];
-
 async function atualizar() {
   try {
-    const r = await fetch('/api/resumo');
-    const d = await r.json();
+    const d = await fetch('/api/resumo').then(r=>r.json());
     let pt=0, kwht=0;
 
-    circs.forEach(c => {
+    CIRCS.forEach(c => {
       const info = d[c]; if (!info) return;
-      document.getElementById('v-'+c).textContent   = info.tensao?.toFixed(1) ?? '—';
-      document.getElementById('i-'+c).textContent   = info.corrente?.toFixed(2) ?? '—';
-      document.getElementById('p-'+c).textContent   = info.potencia?.toFixed(0) ?? '—';
-      document.getElementById('kwh-'+c).textContent = info.energia_kwh?.toFixed(2) ?? '—';
+      document.getElementById('v-'+c).textContent   = info.tensao?.toFixed(1)        ?? '—';
+      document.getElementById('i-'+c).textContent   = info.corrente?.toFixed(2)       ?? '—';
+      document.getElementById('p-'+c).textContent   = info.potencia?.toFixed(0)       ?? '—';
+      document.getElementById('kwh-'+c).textContent = info.energia_kwh?.toFixed(2)    ?? '—';
       document.getElementById('fp-'+c).textContent  = info.fator_potencia?.toFixed(2) ?? '—';
-      document.getElementById('hz-'+c).textContent  = info.frequencia?.toFixed(1) ?? '—';
-      pt += info.potencia || 0;
+      document.getElementById('hz-'+c).textContent  = info.frequencia?.toFixed(1)     ?? '—';
+      pt   += info.potencia    || 0;
       kwht += info.energia_kwh || 0;
     });
 
-    document.getElementById('kpi-pot').textContent  = pt.toFixed(0)+' W';
-    document.getElementById('kpi-kwh').textContent  = kwht.toFixed(2)+' kWh';
-    document.getElementById('kpi-custo').textContent= 'R$ '+(kwht*0.80).toFixed(2);
+    document.getElementById('kpi-pot').textContent   = pt.toFixed(0)+' W';
+    document.getElementById('kpi-kwh').textContent   = kwht.toFixed(2)+' kWh';
+    document.getElementById('kpi-custo').textContent = 'R$ '+(kwht*0.80).toFixed(2);
 
-    // Histórico gráfico
     const [h1,h2,h3] = await Promise.all(
-      circs.map(c => fetch('/api/historico/'+c+'?horas=24').then(r=>r.json()).catch(()=>[]))
+      CIRCS.map(c => fetch('/api/historico/'+c+'?horas=24').then(r=>r.json()).catch(()=>[]))
     );
-    const labels = h1.map(x=>(x.hora||x.timestamp||'').toString().substring(11,16));
+    const labels = h1.map(x=>(x.timestamp||'').toString().substring(11,16));
     chart.data.labels = labels;
     chart.data.datasets[0].data = h1.map(x=>x.potencia);
     chart.data.datasets[1].data = h2.map(x=>x.potencia);
     chart.data.datasets[2].data = h3.map(x=>x.potencia);
     chart.update('none');
 
-    // Anomalias
     const anoms = await fetch('/api/anomalias?limit=5').then(r=>r.json()).catch(()=>[]);
     document.getElementById('kpi-anom').textContent = anoms.length || '0';
     const lista = document.getElementById('lista-anom');
@@ -225,8 +254,8 @@ async function atualizar() {
         <div class="anom-item">
           <i class="bi bi-exclamation-triangle-fill" style="color:#EF4444;font-size:14px;margin-top:2px;flex-shrink:0"></i>
           <div>
-            <div style="font-size:12px;font-weight:600">${(a.circuito||'').replace('_',' ')} · ${a.algoritmo||''}</div>
-            <div style="font-size:11px;color:#6B7280">${a.descricao||'Anomalia detectada'}</div>
+            <div style="font-size:12px;font-weight:600">${(a.circuito||'').replace(/_/g,' ')} · ${a.algoritmo||''}</div>
+            <div style="font-size:11px;color:var(--muted)">${a.descricao||'Anomalia detectada'}</div>
             <div style="font-size:10px;color:#9CA3AF">${(a.timestamp||'').toString().substring(0,16).replace('T',' ')}</div>
           </div>
         </div>`).join('');

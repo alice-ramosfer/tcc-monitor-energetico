@@ -10,3 +10,4 @@ plotly==5.18.0
 apscheduler==3.10.4
 python-dotenv==1.0.0
 gunicorn==21.2.0
+dnspython==2.4.2
